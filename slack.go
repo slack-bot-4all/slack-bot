@@ -71,6 +71,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	case "logs-container":
 		s.SlackLogsContainer(ev)
 	case "haproxy-create":
+		s.HaproxyCreate(ev)
 	case "splunk":
 		s.SlackSplunk(ev)
 	}
