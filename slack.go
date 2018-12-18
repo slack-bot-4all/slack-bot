@@ -80,7 +80,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 }
 
 func (s *SlackListener) HaproxyCreate(ev *slack.MessageEvent) {
-	rancherListener.CreateConfigHaproxy("1s27")
+	rancherListener.CreateConfigHaproxy("1s30")
 }
 
 // SlackSplunk é a função responsável por retornar informações sobre o Splunk
