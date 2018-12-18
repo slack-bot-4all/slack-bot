@@ -178,13 +178,10 @@ func (ranchListener *RancherListener) CreateConfigHaproxy(ID string) {
 }
 
 // UpdateConfHaproxy Atualiza configurações existentes nas conf do lb
-func (ranchListener *RancherListener) UpdateConfHaproxy(ID string) {
+func (ranchListener *RancherListener) UpdateConfHaproxy(containerID string) {
 	// Criar request do tipo PUT
-	var (
-		y = "enabled"
-		n = "disable"
-	)
-	body := fmt.Sprintf("{\"true\":%q, \"false\":%q}", y, n)
-	ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/haConfigs/"+ID+"?action=createscript"), strings.NewReader(body))
+
+	payload := strings.NewReader("{\"lbConfig\": {\r\n\t\t\"config\": \"#Teste1\\n#Teste2\\n#Teste3\"\r\n\t\t}\r\n\t}")
+	ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/loadBalancerServices/"+containerID+"?action=upgrade"), payload)
 
 }
