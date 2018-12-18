@@ -166,7 +166,7 @@ func (ranchListener *RancherListener) CreateConfigHaproxy(ID string) {
 		"zookeeperLeaderPort": 3888,
 		"zookeeperQuorumPort": 2888
 	}`))
-	req, err := ranchListener.MakeHTTPPOSTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/haConfigs/"+ID+"?action=createscript"), nil)
+	req, err := ranchListener.MakeHTTPPOSTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/haConfigs/"+ID+"?action=createscript"), json)
 	CheckErr("Erro ao montar requisição", err)
 
 	resp, err := client.Do(req)
