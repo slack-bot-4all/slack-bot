@@ -148,6 +148,24 @@ func (ranchListener *RancherListener) CreateConfigHaproxy(ID string) {
 
 	client := &http.Client{}
 
+	json := bytes.NewBuffer([]byte(`{
+		"cert": "string",
+		"certChain": "string",
+		"clusterSize": 3,
+		"hostRegistrationUrl": "string",
+		"httpEnabled": true,
+		"httpPort": 80,
+		"httpsPort": 443,
+		"key": "string",
+		"ppHttpPort": 81,
+		"ppHttpsPort": 444,
+		"redisPort": 6379,
+		"swarmEnabled": true,
+		"swarmPort": 2376,
+		"zookeeperClientPort": 2181,
+		"zookeeperLeaderPort": 3888,
+		"zookeeperQuorumPort": 2888
+	}`))
 	req, err := ranchListener.MakeHTTPPOSTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/haConfigs/"+ID+"?action=createscript"), nil)
 	CheckErr("Erro ao montar requisição", err)
 
