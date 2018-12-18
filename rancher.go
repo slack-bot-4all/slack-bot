@@ -155,7 +155,7 @@ func (ranchListener *RancherListener) CreateConfigHaproxy(ID string) {
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
-	log.Println(fmt.Sprintf("Configuração criada!"))
+	log.Println(fmt.Sprintf("Configuração criada! %+v", resp))
 
 }
 

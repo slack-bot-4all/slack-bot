@@ -70,11 +70,16 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.SlackRestartContainer(ev)
 	case "logs-container":
 		s.SlackLogsContainer(ev)
+	case "haproxy-create":
 	case "splunk":
 		s.SlackSplunk(ev)
 	}
 
 	return nil
+}
+
+func (s *SlackListener) HaproxyCreate(ev *slack.MessageEvent) {
+	rancherListener.CreateConfigHaproxy("1st12")
 }
 
 // SlackSplunk é a função responsável por retornar informações sobre o Splunk
