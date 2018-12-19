@@ -97,6 +97,8 @@ func (s *SlackListener) SlackListLoadBalancers(ev *slack.MessageEvent) {
 		lines = append(lines, line)
 	}
 
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText("*Lista de Load Balancers:*", false))
+
 	for _, line := range lines {
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText(line, false))
 	}
