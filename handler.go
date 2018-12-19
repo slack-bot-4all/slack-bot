@@ -63,7 +63,6 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	action := message.Actions[0]
-	usuario := message.User.Name
 	switch action.Name {
 	case actionSelect:
 		switch message.CallbackID {
@@ -107,7 +106,7 @@ func actionRestartContainerFunction(message slack.AttachmentActionCallback, w ht
 	value := message.Actions[0].SelectedOptions[0].Value
 	rancherListener.RestartContainer(value)
 
-	title := fmt.Sprintf("Container de ID %s restartado por @%s com sucesso! :sunglasses:\n\n", value, usuario)
+	title := fmt.Sprintf("Container de ID %s restartado por @%s com sucesso! :sunglasses:\n\n", value, message.User.Name)
 	sendMessage(title)
 }
 
