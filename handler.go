@@ -78,6 +78,7 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case actionCancel:
 		title := fmt.Sprintf(":x: @%s cancelou a requisição", message.User.Name)
 		responseMessage(w, message.OriginalMessage, title, "")
+		getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 	default:
 		log.Printf("[ERROR] Ação inválida: %s", action.Name)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -108,6 +109,8 @@ func actionRestartContainerFunction(message slack.AttachmentActionCallback, w ht
 
 	title := fmt.Sprintf("Container de ID %s restartado por @%s com sucesso! :sunglasses:\n\n", value, message.User.Name)
 	sendMessage(title)
+
+	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 }
 
 func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
@@ -146,6 +149,8 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 	w.Header().Add("Content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&originalMessage)
+
+	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 }
 
 // responseMessage response to the original slackbutton enabled message.
