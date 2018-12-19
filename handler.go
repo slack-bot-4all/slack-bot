@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"time"
 
+	s "github.com/derekparker/delve/service/test"
 	"github.com/nlopes/slack"
 )
 
@@ -119,15 +120,7 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 
 	time.Sleep(2 * time.Second)
 
-	c := slack.New(SlackBotToken)
-
-	s := &SlackListener{
-		client:    c,
-		botID:     SlackBotID,
-		channelID: SlackBotChannel,
-	}
-
-	file, err := s.client.UploadFile(slack.FileUploadParameters{
+	file, err := getAPIConnection().client.UploadFile(slack.FileUploadParameters{
 		Filename: fileName,
 		Filetype: "text",
 		Channels: []string{
