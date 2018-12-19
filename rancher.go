@@ -145,7 +145,9 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	for scanner.Scan() {
 		if line := strings.Split(scanner.Text(), "weight "); len(line) >= 2 {
-			firstWeight = line[1]
+			if firstWeight == "" {
+				firstWeight = line[1]
+			}
 			secondWeight = line[1]
 		}
 	}
