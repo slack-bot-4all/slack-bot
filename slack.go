@@ -90,28 +90,34 @@ func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
 		CallbackID: "update-haproxy",
 		Actions: []slack.AttachmentAction{
 			{
-				Name:    "load-balancer",
+				Name:    "select",
 				Type:    "select",
 				Text:    "Load Balancer",
 				Options: getLbOptions(),
-				Confirm: &slack.ConfirmationField{
-					Title:       "Deseja mesmo selecionar este Load Balancer?",
-					Text:        "Verifique se realmente é este o Load Balancer que você quer selecionar",
-					OkText:      "Sim",
-					DismissText: "Não",
-				},
 			},
 			{
-				Name:    "new-version",
+				Name:    "select",
 				Type:    "select",
 				Text:    "Porc. Nova versão",
 				Options: percentOptions(),
 			},
 			{
-				Name:    "old-version",
+				Name:    "select",
 				Type:    "select",
 				Text:    "Porc. Antiga versão",
 				Options: percentOptions(),
+			},
+			{
+				Name:  "confirm",
+				Text:  "Confirmar",
+				Type:  "button",
+				Style: "good",
+				Confirm: &slack.ConfirmationField{
+					Title:       "Deseja mesmo confirmar as opções selecionadas?",
+					Text:        "Verifique se as opções de Load Balancer e porcentagens realmente são as que você deseja!",
+					OkText:      "Sim",
+					DismissText: "Não",
+				},
 			},
 			{
 				Name:  "cancel",

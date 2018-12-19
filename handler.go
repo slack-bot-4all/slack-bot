@@ -66,7 +66,7 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	usuario := message.User.Name
 	switch action.Name {
 	case actionSelect:
-		// confirmAction(message, w, action.Value, action.SelectedOptions[0].Value)
+		log.Println("Mensagem -> ", message.Message)
 		return
 	case actionCancel:
 		title := fmt.Sprintf(":x: @%s cancelou a requisição", message.User.Name)
