@@ -138,7 +138,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
 
-	firstWeight := strings.Split(actualLbConfig, "weight ")[1]
+	firstWeight := strings.Split(actualLbConfig, "weight ")
 
 	log.Println(firstWeight)
 
