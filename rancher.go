@@ -197,7 +197,7 @@ func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
-	if resp.Status != "200" {
+	if resp.StatusCode != 200 {
 		return ""
 	}
 
