@@ -5,7 +5,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -134,7 +133,7 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 
 // UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
 func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
-	client := &http.Client{}
+	//client := &http.Client{}
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
 
@@ -142,7 +141,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	log.Println(firstWeight)
 
-	lbConfig := &LoadBalancerServices{
+	/*lbConfig := &LoadBalancerServices{
 		LbConfig: &LbConfig{
 			Config: "#req\n#golang",
 		},
@@ -158,7 +157,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	resp, err := client.Do(req)
 	CheckErr("Erro ao enviar requisição", err)
-	defer resp.Body.Close()
+	defer resp.Body.Close()*/
 
 }
 
