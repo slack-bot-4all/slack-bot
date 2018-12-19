@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/rgamba/evtwebsocket"
@@ -162,11 +161,18 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 }
 
-// UpdateConfHaproxy Atualiza configurações existentes nas conf do lb
-func (ranchListener *RancherListener) UpdateConfHaproxy(containerID string) {
-	// Criar request do tipo PUT
+// GetHaproxyCfg Busca a Custom haproxy.cfg do LoadBalancer enviado como parâmetro
+func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
+	client := &http.Client{}
 
-	payload := strings.NewReader("{\"lbConfig\": {\r\n\t\t\"config\": \"#Teste1\\n#Teste2\\n#Teste3\"\r\n\t\t}\r\n\t}")
-	ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/loadBalancerServices/"+containerID+"?action=upgrade"), payload)
+	req, err := ranchListener.MakeHTTPGETRequest(fmt.Sprintf(ranchListener.baseURL + "/" + ranchListener.projectID + "/loadBalancerServices/" + containerID))
+	CheckErr("Erro ao montar requisição de haproxy.cfg", err)
 
+	resp, err := client.Do(req)
+	CheckErr("Erro ao enviar requisição", err)
+	defer resp.Body.Close()
+
+	log.Println(fmt.Sprintf("Resposta GetHaproxyCfg: %+v", resp.Body))
+
+	return ""
 }
