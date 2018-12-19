@@ -133,7 +133,7 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 }
 
 // UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
-func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
+func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) {
 	//client := &http.Client{}
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
@@ -154,6 +154,11 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	log.Println(firstWeight)
 	log.Println(secondWeight)
+
+	newLbConfig := strings.Replace(actualLbConfig, fmt.Sprintf("weight %s", firstWeight), fmt.Sprintf("weight %s", newPercent), -1)
+	newLbConfig = strings.Replace(newLbConfig, fmt.Sprintf("weight %s", secondWeight), fmt.Sprintf("weight %s", oldPercent), -1)
+
+	log.Println(newLbConfig)
 
 	/*lbConfig := &LoadBalancerServices{
 		LbConfig: &LbConfig{
