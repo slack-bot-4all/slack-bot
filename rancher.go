@@ -178,7 +178,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 
 	lbConfig := &LoadBalancerServices{
 		LbConfig: &LbConfig{
-			Config: actualLbConfig,
+			Config: newLbConfig,
 		},
 	}
 
