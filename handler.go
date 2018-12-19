@@ -122,7 +122,7 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 	api := getAPIConnection()
 
 	file, err := api.client.UploadFile(slack.FileUploadParameters{
-		Filename: fileName,
+		File:     fileName,
 		Filetype: "text",
 		Channels: []string{
 			api.channelID,
