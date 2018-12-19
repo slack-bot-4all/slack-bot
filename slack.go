@@ -91,7 +91,11 @@ func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent, message strin
 	newVersionPercent := args[3]
 	oldVersionPercent := args[4]
 
-	rancherListener.UpdateCustomHaproxyCfg(lb, newVersionPercent, oldVersionPercent)
+	resp := rancherListener.UpdateCustomHaproxyCfg(lb, newVersionPercent, oldVersionPercent)
+
+	if resp == "" {
+		log.Println("Erro ao fazer update no haproxy.cfg")
+	}
 	// "1s30", "40", "60"
 	// s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }

@@ -197,6 +197,10 @@ func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
+	if resp.Status != "200" {
+		return ""
+	}
+
 	responseString := ConvertResponseToString(resp.Body)
 	lbConfig := gjson.Get(responseString, "lbConfig.config").String()
 
