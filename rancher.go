@@ -159,6 +159,8 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	log.Println(fmt.Sprintf("Configuração criada!\n%+v", resp))
 
+	ranchListener.GetHaproxyCfg(ID)
+
 }
 
 // GetHaproxyCfg Busca a Custom haproxy.cfg do LoadBalancer enviado como parâmetro
