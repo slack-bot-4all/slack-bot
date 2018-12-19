@@ -83,7 +83,46 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 // fazer a alteração dos pesos do canary deployment no haproxy.cfg
 // dentro do Rancher
 func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
-	rancherListener.UpdateCustomHaproxyCfg("1s30", "40", "60")
+	// rancherListener.UpdateCustomHaproxyCfg("1s30", "40", "60")
+	var attachment = slack.Attachment{
+		Text:       "Selecione o Load Balancer, percentual da nova versão e da antiga versão, respectivamente. :grinning:",
+		Color:      "#0C648A",
+		CallbackID: "update-haproxy",
+		Actions: []slack.AttachmentAction{
+			{
+				Name:    "load-balancers",
+				Type:    "select",
+				Text:    "Selecione o Load Balancer",
+				Options: getLbOptions(),
+				Confirm: &slack.ConfirmationField{
+					Title:       "Deseja mesmo selecionar este Load Balancer?",
+					Text:        "Verifique se realmente é este o Load Balancer que você quer selecionar",
+					OkText:      "Sim",
+					DismissText: "Não",
+				},
+			},
+			{
+				Name:    "percent-new-version",
+				Type:    "select",
+				Text:    "Selecione a porcentagem da nova versão",
+				Options: percentOptions(),
+			},
+			{
+				Name:    "percent-old-version",
+				Type:    "select",
+				Text:    "Selecione a porcentagem da antiga versão",
+				Options: percentOptions(),
+			},
+			{
+				Name:  "cancel",
+				Text:  "Cancelar",
+				Type:  "button",
+				Style: "danger",
+			},
+		},
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
 // SlackSplunk é a função responsável por retornar informações sobre o Splunk
@@ -186,6 +225,30 @@ func getContainers() []slack.AttachmentActionOption {
 		opcoes = append(opcoes, slack.AttachmentActionOption{
 			Text:  fmt.Sprintf("%s | %s", container.id, container.name),
 			Value: container.id,
+		})
+	}
+
+	return opcoes
+}
+
+func getLbOptions() []slack.AttachmentActionOption {
+	opcoes := []slack.AttachmentActionOption{}
+	for _, lb := range rancherListener.GetLoadBalancers() {
+		opcoes = append(opcoes, slack.AttachmentActionOption{
+			Text:  fmt.Sprintf("%s | %s", lb.ID, lb.Name),
+			Value: lb.ID,
+		})
+	}
+
+	return opcoes
+}
+
+func percentOptions() []slack.AttachmentActionOption {
+	opcoes := []slack.AttachmentActionOption{}
+	for i := 0; i < 100; i++ {
+		opcoes = append(opcoes, slack.AttachmentActionOption{
+			Text:  fmt.Sprintf("%d%%", i),
+			Value: string(i),
 		})
 	}
 

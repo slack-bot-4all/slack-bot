@@ -44,6 +44,13 @@ type LoadBalancerServices struct {
 	LbConfig *LbConfig `json:"lbConfig"`
 }
 
+// LoadBalancer é a estrutura que tem como objetivo representar um LoadBalancer do Rancher
+// de forma um pouco mais resumida (é usado na função GetLoadBalancers())
+type LoadBalancer struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 // RestartContainer : Função responsável por dar restart no container recebido por parâmetro
 func (ranchListener *RancherListener) RestartContainer(containerID string) {
 	client := &http.Client{}
@@ -134,7 +141,7 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 }
 
 // UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
-func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) {
+func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) string {
 	client := &http.Client{}
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
@@ -174,6 +181,9 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
+	respString := ConvertResponseToString(resp.Body)
+
+	return gjson.Get(respString, "lbConfig.config").String()
 }
 
 // GetHaproxyCfg Busca a Custom haproxy.cfg do LoadBalancer enviado como parâmetro
@@ -191,4 +201,34 @@ func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
 	lbConfig := gjson.Get(responseString, "lbConfig.config").String()
 
 	return lbConfig
+}
+
+// GetLoadBalancers é a função responsável por trazer um slice
+// de LoadBalancer, que pode ser usado para selects na interface
+// do BOT do Slack
+func (ranchListener *RancherListener) GetLoadBalancers() []*LoadBalancer {
+	client := &http.Client{}
+
+	req, err := ranchListener.MakeHTTPGETRequest(fmt.Sprintf(ranchListener.baseURL + "/" + ranchListener.projectID + "/loadBalancerServices"))
+	CheckErr("Erro ao montar requisição em GetLoadBalancers()", err)
+
+	resp, err := client.Do(req)
+	CheckErr("Erro ao enviar requisição em GetLoadBalancers()", err)
+	defer resp.Body.Close()
+
+	respString := ConvertResponseToString(resp.Body)
+
+	loadBalancersSlice := []*LoadBalancer{}
+
+	data := gjson.Get(respString, "data")
+	data.ForEach(func(key, value gjson.Result) bool {
+		lb := new(LoadBalancer)
+		lb.ID = value.Get("id").String()
+		lb.Name = value.Get("name").String()
+		loadBalancersSlice = append(loadBalancersSlice, lb)
+
+		return true
+	})
+
+	return loadBalancersSlice
 }

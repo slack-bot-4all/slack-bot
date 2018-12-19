@@ -24,6 +24,7 @@ const (
 	actionCancel           = "cancel"
 	actionRestartContainer = "restart-container"
 	actionLogsContainer    = "logs-container"
+	actionHaproxyCfgUpdate = "update-haproxy"
 )
 
 func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -78,6 +79,8 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sendMessage(title)
 	case actionLogsContainer:
 		actionLogsContainerFunction(message, w)
+	case actionHaproxyCfgUpdate:
+
 	default:
 		log.Printf("[ERROR] Ação inválida: %s", action.Name)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -85,6 +88,16 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
+}
+
+func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+	lb := message.Actions[0].SelectedOptions[0].Value
+	newPercent := message.Actions[1].SelectedOptions[0].Value
+	oldPercent := message.Actions[2].SelectedOptions[0].Value
+
+	resp := rancherListener.UpdateCustomHaproxyCfg(lb, newPercent, oldPercent)
+
+	responseMessage(w, message.OriginalMessage, "Configurações do Haproxy alteradas com sucesso!", fmt.Sprintf("`%s`", resp))
 }
 
 func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
