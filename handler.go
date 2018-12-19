@@ -69,20 +69,16 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch message.CallbackID {
 		case "update-haproxy":
 			actionHaproxyCfgUpdateFunction(message, w)
+		case "restart-container":
+			actionRestartContainerFunction(message, w)
+		case "logs-container":
+			actionLogsContainerFunction(message, w)
 		default:
 			return
 		}
 	case actionCancel:
 		title := fmt.Sprintf(":x: @%s cancelou a requisição", message.User.Name)
 		responseMessage(w, message.OriginalMessage, title, "")
-	case actionRestartContainer:
-		value := action.SelectedOptions[0].Value
-		rancherListener.RestartContainer(value)
-
-		title := fmt.Sprintf("Container de ID %s restartado por @%s com sucesso! :sunglasses:\n\n", value, usuario)
-		sendMessage(title)
-	case actionLogsContainer:
-		actionLogsContainerFunction(message, w)
 	default:
 		log.Printf("[ERROR] Ação inválida: %s", action.Name)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -105,6 +101,14 @@ func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w ht
 	}
 
 	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
+}
+
+func actionRestartContainerFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+	value := message.Actions[0].SelectedOptions[0].Value
+	rancherListener.RestartContainer(value)
+
+	title := fmt.Sprintf("Container de ID %s restartado por @%s com sucesso! :sunglasses:\n\n", value, usuario)
+	sendMessage(title)
 }
 
 func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {

@@ -143,7 +143,7 @@ func (s *SlackListener) SlackLogsContainer(ev *slack.MessageEvent) {
 		CallbackID: "logs-container",
 		Actions: []slack.AttachmentAction{
 			{
-				Name:    "logs-container",
+				Name:    "select",
 				Type:    "select",
 				Options: getContainers(),
 			},
@@ -169,7 +169,7 @@ func (s *SlackListener) SlackRestartContainer(ev *slack.MessageEvent) {
 		CallbackID: "restart-container",
 		Actions: []slack.AttachmentAction{
 			{
-				Name:    "restart-container",
+				Name:    "select",
 				Type:    "select",
 				Options: getContainers(),
 				Confirm: &slack.ConfirmationField{
