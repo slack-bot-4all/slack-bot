@@ -93,6 +93,9 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+	if len(message.Actions) < 3 {
+		return
+	}
 	lb := message.Actions[0].SelectedOptions[0].Value
 	newPercent := message.Actions[0].SelectedOptions[1].Value
 	oldPercent := message.Actions[0].SelectedOptions[2].Value
