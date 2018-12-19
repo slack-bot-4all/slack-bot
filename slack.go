@@ -66,15 +66,12 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
-	switch message {
-	case "restart-container":
+	if strings.HasPrefix(message, "restart-container") {
 		s.SlackRestartContainer(ev)
-	case "logs-container":
+	} else if strings.HasPrefix(message, "logs-container") {
 		s.SlackLogsContainer(ev)
-	case "haproxy-create":
+	} else if strings.HasPrefix(message, "haproxy-create") {
 		s.SlackUpdateHaproxy(ev)
-	case "splunk":
-		s.SlackSplunk(ev)
 	}
 
 	return nil
@@ -84,40 +81,11 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 // fazer a alteração dos pesos do canary deployment no haproxy.cfg
 // dentro do Rancher
 func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
-	// rancherListener.UpdateCustomHaproxyCfg("1s30", "40", "60")
-	var attachment = slack.Attachment{
-		Text:       "Selecione o Load Balancer, percentual da nova versão e da antiga versão, respectivamente. :grinning:",
-		Color:      "#0C648A",
-		CallbackID: "update-haproxy",
-		Actions: []slack.AttachmentAction{
-			{
-				Name:    "select",
-				Type:    "select",
-				Text:    "Load Balancer",
-				Options: getLbOptions(),
-			},
-			{
-				Name:    "select",
-				Type:    "select",
-				Text:    "Porc. Nova versão",
-				Options: percentOptions(),
-			},
-			{
-				Name:    "select",
-				Type:    "select",
-				Text:    "Porc. Antiga versão",
-				Options: percentOptions(),
-			},
-			{
-				Name:  "cancel",
-				Text:  "Cancelar",
-				Type:  "button",
-				Style: "danger",
-			},
-		},
-	}
+	args := strings.Split(ev.Msg.Text, fmt.Sprintf("%s ", ev.Msg.Text))
 
-	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+	fmt.Println(args)
+	// rancherListener.UpdateCustomHaproxyCfg("1s30", "40", "60")
+	// s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
 // SlackSplunk é a função responsável por retornar informações sobre o Splunk
