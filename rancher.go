@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/rgamba/evtwebsocket"
@@ -131,13 +132,15 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 	conn.Dial(urlAndToken, "")
 }
 
-// CreateConfigHaproxy Cria conf no lb
+// UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
 func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
-	//Código genérico para POST de criação das conf
-	//Checar melhor a doc da API
-	//https://rancher.com/docs/rancher/v1.6/en/api/v2-beta/api-resources/haConfig/#createscript
-
 	client := &http.Client{}
+
+	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
+
+	firstWeight := strings.Split(actualLbConfig, "weight ")[1]
+
+	log.Println(firstWeight)
 
 	lbConfig := &LoadBalancerServices{
 		LbConfig: &LbConfig{
@@ -156,12 +159,6 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 	resp, err := client.Do(req)
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
-
-	log.Println(fmt.Sprintf("Configuração criada!\n%+v", resp))
-
-	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
-
-	log.Println("Config Atual: ", actualLbConfig)
 
 }
 
