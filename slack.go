@@ -116,10 +116,11 @@ func (s *SlackListener) SlackUpdateLoadBalancer(ev *slack.MessageEvent) {
 
 	resp := rancherListener.UpdateCustomHaproxyCfg(lb, newVersionPercent, oldVersionPercent)
 
-	if resp == "" {
+	if !resp {
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto", false))
 	}
-	// "1s30", "40", "60"
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText("Arquivo 'haproxy.cfg' alterado com sucesso!", false))
 }
 
 // SlackSplunk é a função responsável por retornar informações sobre o Splunk

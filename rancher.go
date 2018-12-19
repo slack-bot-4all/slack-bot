@@ -141,13 +141,13 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 }
 
 // UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
-func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) string {
+func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) bool {
 	client := &http.Client{}
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
 
 	if actualLbConfig == "" {
-		return ""
+		return false
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
@@ -185,9 +185,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
-	respString := ConvertResponseToString(resp.Body)
-
-	return gjson.Get(respString, "lbConfig.config").String()
+	return true
 }
 
 // GetHaproxyCfg Busca a Custom haproxy.cfg do LoadBalancer enviado como parâmetro
