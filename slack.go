@@ -112,6 +112,7 @@ func (s *SlackListener) SlackUpdateLoadBalancer(ev *slack.MessageEvent) {
 
 	if len(args) != 5 {
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB peso-nova-versao peso-antiga-versao", haproxyUpdate), false))
+		return
 	}
 
 	lb := args[2]
