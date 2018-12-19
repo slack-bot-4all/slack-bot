@@ -90,6 +90,7 @@ func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
 		CallbackID: "update-haproxy",
 		Actions: []slack.AttachmentAction{
 			{
+				Name:    "load-balancer",
 				Type:    "select",
 				Text:    "Load Balancer",
 				Options: getLbOptions(),
@@ -101,11 +102,13 @@ func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
 				},
 			},
 			{
+				Name:    "new-version",
 				Type:    "select",
 				Text:    "Porc. Nova versão",
 				Options: percentOptions(),
 			},
 			{
+				Name:    "old-version",
 				Type:    "select",
 				Text:    "Porc. Antiga versão",
 				Options: percentOptions(),
