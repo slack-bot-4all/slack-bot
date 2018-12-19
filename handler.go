@@ -91,13 +91,12 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
-	log.Println(message.Actions)
 	if len(message.Actions) < 3 {
 		return
 	}
 	lb := message.Actions[0].SelectedOptions[0].Value
-	newPercent := message.Actions[0].SelectedOptions[1].Value
-	oldPercent := message.Actions[0].SelectedOptions[2].Value
+	newPercent := message.Actions[1].SelectedOptions[0].Value
+	oldPercent := message.Actions[2].SelectedOptions[0].Value
 
 	if lb != "" && newPercent != "" && oldPercent != "" {
 		resp := rancherListener.UpdateCustomHaproxyCfg(lb, newPercent, oldPercent)
