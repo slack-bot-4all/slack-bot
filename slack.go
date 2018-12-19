@@ -83,8 +83,12 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, fmt.Sprintf("%s ", ev.Msg.Text))
 
-	fmt.Println(args)
-	// rancherListener.UpdateCustomHaproxyCfg("1s30", "40", "60")
+	lb := args[2]
+	newVersionPercent := args[3]
+	oldVersionPercent := args[4]
+
+	rancherListener.UpdateCustomHaproxyCfg(lb, newVersionPercent, oldVersionPercent)
+	// "1s30", "40", "60"
 	// s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
