@@ -118,6 +118,7 @@ func (s *SlackListener) SlackUpdateLoadBalancer(ev *slack.MessageEvent) {
 
 	if !resp {
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto", false))
+		return
 	}
 
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText("Arquivo 'haproxy.cfg' alterado com sucesso!", false))
