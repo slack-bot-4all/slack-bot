@@ -85,7 +85,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 // fazer a alteração dos pesos do canary deployment no haproxy.cfg
 // dentro do Rancher
 func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
-	args := strings.Split(haproxyUpdate, fmt.Sprintf("%s ", ev.Msg.Text))[1]
+	args := strings.Split(haproxyUpdate, fmt.Sprintf("%s ", haproxyUpdate))
 
 	fmt.Println(args)
 
