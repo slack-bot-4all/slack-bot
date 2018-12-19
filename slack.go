@@ -108,18 +108,6 @@ func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
 				Options: percentOptions(),
 			},
 			{
-				Name:  "confirm",
-				Text:  "Confirmar",
-				Type:  "button",
-				Style: "good",
-				Confirm: &slack.ConfirmationField{
-					Title:       "Deseja mesmo confirmar as opções selecionadas?",
-					Text:        "Verifique se as opções de Load Balancer e porcentagens realmente são as que você deseja!",
-					OkText:      "Sim",
-					DismissText: "Não",
-				},
-			},
-			{
 				Name:  "cancel",
 				Text:  "Cancelar",
 				Type:  "button",

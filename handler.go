@@ -66,8 +66,12 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	usuario := message.User.Name
 	switch action.Name {
 	case actionSelect:
-		log.Println("Mensagem -> ", message.Message)
-		return
+		switch message.CallbackID {
+		case "update-haproxy":
+			actionHaproxyCfgUpdateFunction(message, w)
+		default:
+			return
+		}
 	case actionCancel:
 		title := fmt.Sprintf(":x: @%s cancelou a requisição", message.User.Name)
 		responseMessage(w, message.OriginalMessage, title, "")
@@ -79,8 +83,6 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sendMessage(title)
 	case actionLogsContainer:
 		actionLogsContainerFunction(message, w)
-	case actionConfirm:
-		log.Println("Mensagem Confirm -> ", message.Message)
 	default:
 		log.Printf("[ERROR] Ação inválida: %s", action.Name)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -95,9 +97,13 @@ func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w ht
 	newPercent := message.Actions[0].SelectedOptions[1].Value
 	oldPercent := message.Actions[0].SelectedOptions[2].Value
 
-	resp := rancherListener.UpdateCustomHaproxyCfg(lb, newPercent, oldPercent)
+	if lb != "" && newPercent != "" && oldPercent != "" {
+		resp := rancherListener.UpdateCustomHaproxyCfg(lb, newPercent, oldPercent)
 
-	responseMessage(w, message.OriginalMessage, "Configurações do Haproxy alteradas com sucesso!", fmt.Sprintf("`%s`", resp))
+		responseMessage(w, message.OriginalMessage, "Configurações do Haproxy alteradas com sucesso!", fmt.Sprintf("`%s`", resp))
+	}
+
+	return
 }
 
 func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
