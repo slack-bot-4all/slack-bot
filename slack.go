@@ -90,7 +90,6 @@ func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
 		CallbackID: "update-haproxy",
 		Actions: []slack.AttachmentAction{
 			{
-				Name:    "load-balancers",
 				Type:    "select",
 				Text:    "Selecione o Load Balancer",
 				Options: getLbOptions(),
@@ -102,13 +101,11 @@ func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
 				},
 			},
 			{
-				Name:    "percent-new-version",
 				Type:    "select",
 				Text:    "Selecione a porcentagem da nova versão",
 				Options: percentOptions(),
 			},
 			{
-				Name:    "percent-old-version",
 				Type:    "select",
 				Text:    "Selecione a porcentagem da antiga versão",
 				Options: percentOptions(),
