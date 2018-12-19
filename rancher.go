@@ -146,6 +146,10 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
 
+	if actualLbConfig == "" {
+		return ""
+	}
+
 	scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
 
 	var firstWeight string
