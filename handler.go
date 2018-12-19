@@ -88,8 +88,6 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 }
 
 func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
@@ -106,7 +104,7 @@ func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w ht
 		responseMessage(w, message.OriginalMessage, "Configurações do Haproxy alteradas com sucesso!", fmt.Sprintf("`%s`", resp))
 	}
 
-	return
+	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 }
 
 func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
