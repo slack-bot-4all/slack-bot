@@ -91,6 +91,7 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+	log.Println(message.Actions)
 	if len(message.Actions) < 3 {
 		return
 	}
