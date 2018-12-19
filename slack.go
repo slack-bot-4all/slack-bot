@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/nlopes/slack"
@@ -242,7 +243,7 @@ func percentOptions() []slack.AttachmentActionOption {
 	for i := 0; i < 100; i++ {
 		opcoes = append(opcoes, slack.AttachmentActionOption{
 			Text:  fmt.Sprintf("%d%%", i),
-			Value: string(i),
+			Value: strconv.Itoa(i),
 		})
 	}
 
