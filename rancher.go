@@ -123,7 +123,6 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 			verifyExists, err := os.Open(fileName)
 
 			if err == nil {
-				fmt.Println(string(msg))
 				WriteOnFile(fileName, string(msg))
 			}
 
