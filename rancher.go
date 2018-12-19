@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -142,6 +143,13 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 
 // UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
 func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) bool {
+	newPercentToInteger, _ := strconv.Atoi(newPercent)
+	oldPercentToInteger, _ := strconv.Atoi(oldPercent)
+
+	if (newPercentToInteger + oldPercentToInteger) != 100 {
+		return false
+	}
+
 	client := &http.Client{}
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
