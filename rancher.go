@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -174,7 +175,9 @@ func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
-	log.Println(fmt.Sprintf("Resposta GetHaproxyCfg: %+v", resp.Body))
+	respReader, _ := ioutil.ReadAll(resp.Body)
+
+	log.Println(fmt.Sprintf("Resposta GetHaproxyCfg: %+v", string(respReader)))
 
 	return ""
 }
