@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"log"
@@ -137,8 +138,17 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
 
-	firstWeight := strings.Split(actualLbConfig, "weight ")[0]
-	secondWeight := strings.Split(actualLbConfig, "weight ")[1]
+	scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
+
+	var firstWeight string
+	var secondWeight string
+
+	for scanner.Scan() {
+		if line := strings.Split(scanner.Text(), "weight "); len(line) >= 2 {
+			firstWeight = line[0]
+			secondWeight = line[1]
+		}
+	}
 
 	log.Println(firstWeight)
 	log.Println(secondWeight)
