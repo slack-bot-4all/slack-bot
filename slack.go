@@ -15,6 +15,7 @@ import (
 
 const (
 	haproxyUpdate = "haproxy-update"
+	haproxyList   = "haproxy-list"
 )
 
 // SlackListener é a struct que armazena dados do BOT
@@ -75,16 +76,36 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	} else if strings.HasPrefix(message, "logs-container") {
 		s.SlackLogsContainer(ev)
 	} else if strings.HasPrefix(message, haproxyUpdate) {
-		s.SlackUpdateHaproxy(ev, message)
+		s.SlackUpdateLoadBalancer(ev)
+	} else if strings.HasPrefix(message, haproxyList) {
+		s.SlackListLoadBalancers(ev)
 	}
 
 	return nil
 }
 
-// SlackUpdateHaproxy é a função que busca a função em rancher.go para
+// SlackListLoadBalancers é a função responsável por retornar para o usuário a lista
+// de LB's
+func (s *SlackListener) SlackListLoadBalancers(ev *slack.MessageEvent) {
+	loadBalancers := rancherListener.GetLoadBalancers()
+
+	var lines []string
+
+	for _, lb := range loadBalancers {
+		line := fmt.Sprintf("`%s | %s`", lb.ID, lb.Name)
+
+		lines = append(lines, line)
+	}
+
+	for _, line := range lines {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(line, false))
+	}
+}
+
+// SlackUpdateLoadBalancer é a função que busca a função em rancher.go para
 // fazer a alteração dos pesos do canary deployment no haproxy.cfg
 // dentro do Rancher
-func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent, message string) {
+func (s *SlackListener) SlackUpdateLoadBalancer(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	lb := args[2]
