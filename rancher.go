@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -160,7 +159,9 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	log.Println(fmt.Sprintf("Configuração criada!\n%+v", resp))
 
-	ranchListener.GetHaproxyCfg(ID)
+	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
+
+	log.Println("Config Atual: ", actualLbConfig)
 
 }
 
@@ -175,9 +176,8 @@ func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
-	respReader, _ := ioutil.ReadAll(resp.Body)
+	responseString := ConvertResponseToString(resp.Body)
+	lbConfig := gjson.Get(responseString, "lbConfig.config").String()
 
-	log.Println(fmt.Sprintf("Resposta GetHaproxyCfg: %+v", string(respReader)))
-
-	return ""
+	return lbConfig
 }
