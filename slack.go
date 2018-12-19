@@ -14,8 +14,10 @@ import (
 )
 
 const (
-	haproxyUpdate = "haproxy-update"
-	haproxyList   = "haproxy-list"
+	haproxyUpdate    = "haproxy-update"
+	haproxyList      = "haproxy-list"
+	logsContainer    = "logs-container"
+	restartContainer = "restart-container"
 )
 
 // SlackListener é a struct que armazena dados do BOT
@@ -71,9 +73,9 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
-	if strings.HasPrefix(message, "restart-container") {
+	if strings.HasPrefix(message, restartContainer) {
 		s.SlackRestartContainer(ev)
-	} else if strings.HasPrefix(message, "logs-container") {
+	} else if strings.HasPrefix(message, logsContainer) {
 		s.SlackLogsContainer(ev)
 	} else if strings.HasPrefix(message, haproxyUpdate) {
 		s.SlackUpdateLoadBalancer(ev)

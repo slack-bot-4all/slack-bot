@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"time"
 
-	s "github.com/derekparker/delve/service/test"
 	"github.com/nlopes/slack"
 )
 
@@ -120,11 +119,13 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 
 	time.Sleep(2 * time.Second)
 
-	file, err := getAPIConnection().client.UploadFile(slack.FileUploadParameters{
+	api := getAPIConnection()
+
+	file, err := api.client.UploadFile(slack.FileUploadParameters{
 		Filename: fileName,
 		Filetype: "text",
 		Channels: []string{
-			s.channelID,
+			api.channelID,
 		},
 	})
 	CheckErr("Erro ao fazer upload de arquivo de logs de container", err)
