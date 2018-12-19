@@ -167,9 +167,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 			if firstWeight == "" {
 				firstWeight = line[1]
 			}
-			if secondWeight == "" {
-				secondWeight = line[1]
-			}
+			secondWeight = line[1]
 		}
 	}
 
