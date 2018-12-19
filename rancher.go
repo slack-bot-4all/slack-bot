@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -141,39 +142,26 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 }
 
 // CreateConfigHaproxy Cria conf no lb
-func (ranchListener *RancherListener) CreateConfigHaproxy(ID string) {
+func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 	//Código genérico para POST de criação das conf
 	//Checar melhor a doc da API
 	//https://rancher.com/docs/rancher/v1.6/en/api/v2-beta/api-resources/haConfig/#createscript
 
 	client := &http.Client{}
 
-	json := bytes.NewBuffer([]byte(`{
-		"cert": "string",
-		"certChain": "string",
-		"clusterSize": 3,
-		"hostRegistrationUrl": "string",
-		"httpEnabled": true,
-		"httpPort": 80,
-		"httpsPort": 443,
-		"key": "string",
-		"ppHttpPort": 81,
-		"ppHttpsPort": 444,
-		"redisPort": 6379,
-		"swarmEnabled": true,
-		"swarmPort": 2376,
-		"zookeeperClientPort": 2181,
-		"zookeeperLeaderPort": 3888,
-		"zookeeperQuorumPort": 2888
-	}`))
-	req, err := ranchListener.MakeHTTPPOSTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/haConfigs/"+ID+"?action=createscript"), json)
+	data := make(url.Values)
+	data.Add("config", "#bot\n#golang")
+
+	payload := bytes.NewBufferString(data.Encode())
+
+	req, err := ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/loadBalancerServices/"+ID), payload)
 	CheckErr("Erro ao montar requisição", err)
 
 	resp, err := client.Do(req)
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
-	log.Println(fmt.Sprintf("Configuração criada! %+v", resp))
+	log.Println(fmt.Sprintf("Configuração criada!\n%+v", resp))
 
 }
 
