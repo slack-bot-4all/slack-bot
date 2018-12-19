@@ -5,10 +5,10 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -32,24 +32,15 @@ type Container struct {
 	name      string
 }
 
-// ConfHaproxy é uma estrutura que é usada para enviar dados para conf Haproxy
-type ConfHaproxy struct {
-	cert                string //Optional 	- 	-
-	certChain           string //Optional 	- 	-
-	clusterSize         int    //Optional 	- 	3
-	hostRegistrationURL string //Yes 	- 	-
-	httpEnabled         bool   //Optional 	- 	true
-	httpPort            int    //Optional 	- 	80
-	httpsPort           int    //Optional 	- 	443
-	key                 string //Optional 	- 	-
-	ppHTTPPort          int    //Optional 	- 	81
-	ppHTTPSPort         int    //Optional 	- 	444
-	redisPort           int    //Optional 	- 	6379
-	swarmEnabled        bool   //Optional 	- 	true
-	swarmPort           int    //Optional 	- 	2376
-	zookeeperClientPort int    //Optional 	- 	2181
-	zookeeperLeaderPort int    //Optional 	- 	3888
-	zookeeperQuorumPort int    //Optional 	- 	2888
+// LbConfig é uma estrutura que é usada para enviar dados para conf Haproxy
+type LbConfig struct {
+	Config string `json:"config"`
+}
+
+// LoadBalancerServices é uma estrutura que é usada para a construção do JSON de requisição
+// quando se vai fazer o edit/upgrade de LB's
+type LoadBalancerServices struct {
+	LbConfig *LbConfig `json:"lbConfig"`
 }
 
 // RestartContainer : Função responsável por dar restart no container recebido por parâmetro
@@ -149,12 +140,18 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 
 	client := &http.Client{}
 
-	data := make(url.Values)
-	data.Add("lbConfig.config", "#bot\ngolang")
+	lbConfig := &LoadBalancerServices{
+		LbConfig: &LbConfig{
+			Config: "#req\n#golang",
+		},
+	}
 
-	payload := bytes.NewBufferString(data.Encode())
+	payload, err := json.Marshal(lbConfig)
+	CheckErr("Erro ao fazer conversão de struct para JSON", err)
 
-	req, err := ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/loadBalancerServices/"+ID), payload)
+	payloadReader := bytes.NewReader(payload)
+
+	req, err := ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/loadBalancerServices/"+ID), payloadReader)
 	CheckErr("Erro ao montar requisição", err)
 
 	resp, err := client.Do(req)
