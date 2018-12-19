@@ -136,6 +136,8 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 	})
 	CheckErr("Erro ao fazer upload de arquivo de logs de container", err)
 
+	log.Println(file.Permalink)
+
 	originalMessage := message.OriginalMessage
 	originalMessage.Files = []slack.File{
 		{
