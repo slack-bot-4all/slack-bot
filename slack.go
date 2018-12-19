@@ -13,6 +13,10 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+const (
+	haproxyUpdate = "haproxy-update"
+)
+
 // SlackListener é a struct que armazena dados do BOT
 type SlackListener struct {
 	client    *slack.Client
@@ -70,7 +74,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.SlackRestartContainer(ev)
 	} else if strings.HasPrefix(message, "logs-container") {
 		s.SlackLogsContainer(ev)
-	} else if strings.HasPrefix(message, "haproxy-create") {
+	} else if strings.HasPrefix(message, haproxyUpdate) {
 		s.SlackUpdateHaproxy(ev)
 	}
 
@@ -81,7 +85,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 // fazer a alteração dos pesos do canary deployment no haproxy.cfg
 // dentro do Rancher
 func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
-	args := strings.Split(ev.Msg.Text, fmt.Sprintf("%s ", ev.Msg.Text))[1]
+	args := strings.Split(haproxyUpdate, fmt.Sprintf("%s ", ev.Msg.Text))[1]
 
 	fmt.Println(args)
 
