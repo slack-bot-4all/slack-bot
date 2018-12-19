@@ -20,7 +20,7 @@ type interactionHandler struct {
 
 const (
 	actionSelect           = "select"
-	actionStart            = "start"
+	actionConfirm          = "confirm"
 	actionCancel           = "cancel"
 	actionRestartContainer = "restart-container"
 	actionLogsContainer    = "logs-container"
@@ -79,8 +79,8 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sendMessage(title)
 	case actionLogsContainer:
 		actionLogsContainerFunction(message, w)
-	case actionHaproxyCfgUpdate:
-
+	case actionConfirm:
+		log.Println("Mensagem Confirm -> ", message.Message)
 	default:
 		log.Printf("[ERROR] Ação inválida: %s", action.Name)
 		w.WriteHeader(http.StatusInternalServerError)
