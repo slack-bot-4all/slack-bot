@@ -75,7 +75,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	} else if strings.HasPrefix(message, "logs-container") {
 		s.SlackLogsContainer(ev)
 	} else if strings.HasPrefix(message, haproxyUpdate) {
-		s.SlackUpdateHaproxy(ev)
+		s.SlackUpdateHaproxy(ev, message)
 	}
 
 	return nil
@@ -84,8 +84,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 // SlackUpdateHaproxy é a função que busca a função em rancher.go para
 // fazer a alteração dos pesos do canary deployment no haproxy.cfg
 // dentro do Rancher
-func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
-	args := strings.Split(strings.TrimSpace(haproxyUpdate), " ")[1]
+func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent, message string) {
+	args := strings.Split(strings.TrimSpace(message), " ")[1]
 
 	fmt.Println(args)
 
