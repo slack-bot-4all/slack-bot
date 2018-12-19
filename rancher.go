@@ -150,7 +150,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string) {
 	client := &http.Client{}
 
 	data := make(url.Values)
-	data.Add("config", "#bot\n#golang")
+	data.Add("lbConfig.config", "#bot\ngolang")
 
 	payload := bytes.NewBufferString(data.Encode())
 
