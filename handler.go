@@ -127,7 +127,7 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 		channelID: SlackBotChannel,
 	}
 
-	_, err := s.client.UploadFile(slack.FileUploadParameters{
+	file, err := s.client.UploadFile(slack.FileUploadParameters{
 		Filename: fileName,
 		Filetype: "text",
 		Channels: []string{
@@ -137,13 +137,13 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 	CheckErr("Erro ao fazer upload de arquivo de logs de container", err)
 
 	originalMessage := message.OriginalMessage
-	/*originalMessage.Files = []slack.File{
+	originalMessage.Files = []slack.File{
 		{
 			ID:       file.ID,
 			Title:    fmt.Sprintf("Logs do container: %s", value),
 			Filetype: "text",
 		},
-	}*/
+	}
 	originalMessage.Attachments = []slack.Attachment{}
 
 	w.Header().Add("Content-type", "application/json")
