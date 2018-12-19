@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/rgamba/evtwebsocket"
@@ -156,10 +155,6 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	if actualLbConfig == "" {
 		return false
 	}
-
-	newLbConfig := strings.Split(actualLbConfig, " ")
-
-	log.Println(newLbConfig)
 
 	/*scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
 
