@@ -79,6 +79,9 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	return nil
 }
 
+// SlackUpdateHaproxy é a função que busca a função em rancher.go para
+// fazer a alteração dos pesos do canary deployment no haproxy.cfg
+// dentro do Rancher
 func (s *SlackListener) SlackUpdateHaproxy(ev *slack.MessageEvent) {
 	rancherListener.UpdateCustomHaproxyCfg("1s30", "40", "60")
 }

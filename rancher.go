@@ -6,6 +6,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -134,7 +135,7 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 
 // UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
 func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) {
-	//client := &http.Client{}
+	client := &http.Client{}
 
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
 
@@ -152,17 +153,12 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 		}
 	}
 
-	log.Println(firstWeight)
-	log.Println(secondWeight)
-
 	newLbConfig := strings.Replace(actualLbConfig, fmt.Sprintf("weight %s", firstWeight), fmt.Sprintf("weight %s", newPercent), -1)
 	newLbConfig = strings.Replace(newLbConfig, fmt.Sprintf("weight %s", secondWeight), fmt.Sprintf("weight %s", oldPercent), -1)
 
-	log.Println(newLbConfig)
-
-	/*lbConfig := &LoadBalancerServices{
+	lbConfig := &LoadBalancerServices{
 		LbConfig: &LbConfig{
-			Config: "#req\n#golang",
+			Config: newLbConfig,
 		},
 	}
 
@@ -176,7 +172,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 
 	resp, err := client.Do(req)
 	CheckErr("Erro ao enviar requisição", err)
-	defer resp.Body.Close()*/
+	defer resp.Body.Close()
 
 }
 
