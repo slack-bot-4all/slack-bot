@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/rgamba/evtwebsocket"
@@ -155,7 +157,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 		return false
 	}
 
-	/*scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
+	scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
 
 	var firstWeight string
 	var secondWeight string
@@ -171,10 +173,10 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 				strings.Replace(strings.Join(line, " "), line[1], oldPercent, -1)
 			}
 		}
-	}*/
+	}
 
-	// newLbConfig := strings.Replace(actualLbConfig, fmt.Sprintf("weight %s", firstWeight), fmt.Sprintf("weight %s", newPercent), -1)
-	// newLbConfig = strings.Replace(newLbConfig, fmt.Sprintf("weight %s", secondWeight), fmt.Sprintf("weight %s", oldPercent), -1)
+	newLbConfig := strings.Replace(actualLbConfig, fmt.Sprintf("weight %s", firstWeight), fmt.Sprintf("weight %s", newPercent), -1)
+	newLbConfig = strings.Replace(newLbConfig, fmt.Sprintf("weight %s", secondWeight), fmt.Sprintf("weight %s", oldPercent), -1)
 
 	lbConfig := &LoadBalancerServices{
 		LbConfig: &LbConfig{
