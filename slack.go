@@ -73,7 +73,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
-	if strings.HasPrefix(message, restartContainer) {
+	if strings.HasPrefix(message, actionRestartContainer) {
 		s.SlackRestartContainer(ev)
 	} else if strings.HasPrefix(message, logsContainer) {
 		s.SlackLogsContainer(ev)
