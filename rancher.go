@@ -171,11 +171,11 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 			if firstWeight == "" {
 				firstWeight = line[1]
 				atual1 = line[1]
-				newLbConfig = strings.Replace(actualLbConfig, fmt.Sprintf("weight %s", firstWeight), fmt.Sprintf("weight %s", newPercent), 1)
+				//newLbConfig = strings.Replace(actualLbConfig, fmt.Sprintf("weight %s", firstWeight), fmt.Sprintf("weight %s", newPercent), 1)
 				r.Replace(firstWeight)
 			} else {
 				secondWeight = line[1]
-				newLbConfig = strings.Replace(newLbConfig, fmt.Sprintf("weight %s", secondWeight), fmt.Sprintf("weight %s", oldPercent), 1)
+				//newLbConfig = strings.Replace(newLbConfig, fmt.Sprintf("weight %s", secondWeight), fmt.Sprintf("weight %s", oldPercent), 1)
 				atual2 = line[1]
 				r.Replace(secondWeight)
 			}
