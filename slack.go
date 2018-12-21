@@ -15,9 +15,10 @@ import (
 
 const (
 	haproxyUpdate    = "haproxy-update"
-	haproxyList      = "haproxy-list"
+	haproxyList      = "lb-list"
 	logsContainer    = "logs-container"
 	restartContainer = "restart-container"
+	comandos         = "comandos"
 )
 
 // SlackListener é a struct que armazena dados do BOT
@@ -71,6 +72,11 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	// Tirando a menção ao BOT da mensagem e guardando em uma variável
 	message := strings.Split(strings.TrimSpace(ev.Msg.Text), " ")[1]
 
+	if strings.Contains(ev.Msg.Text, "ajuda") {
+		s.SlackCommandHelper(ev, message)
+		return nil
+	}
+
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
 	if strings.HasPrefix(message, actionRestartContainer) {
@@ -81,9 +87,44 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.SlackUpdateLoadBalancer(ev)
 	} else if strings.HasPrefix(message, haproxyList) {
 		s.SlackListLoadBalancers(ev)
+	} else if strings.HasPrefix(message, comandos) {
+		s.SlackHelper(ev)
 	}
 
 	return nil
+}
+
+// SlackCommandHelper é a função que retorna melhores informações
+// sobre um comando específico
+func (s *SlackListener) SlackCommandHelper(ev *slack.MessageEvent, message string) {
+	var msg string
+
+	for _, cmd := range Commands {
+		if cmd.Cmd == message {
+			cmd.Usage = strings.Replace(cmd.Usage, "comando", cmd.Cmd, 1)
+			msg = fmt.Sprintf("*Comando:* `%s`\n*Descrição:* _%s_\n*Uso:* _%s_\n*Dica:* _%s_", cmd.Cmd, cmd.Description, cmd.Usage, cmd.Lint)
+		}
+	}
+
+	if msg == "" {
+		msg = "Comando não encontrado."
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
+}
+
+// SlackHelper é a função que retorna os comandos possíveis juntamente
+// com breves resumos e formas de uso das mesmas
+func (s *SlackListener) SlackHelper(ev *slack.MessageEvent) {
+	msg := "*Comandos:* "
+
+	for _, cmd := range Commands {
+		msg += fmt.Sprintf("`%s` ", cmd.Cmd)
+	}
+
+	msg += "\n\n_*Obs.:* Caso queira informações mais detalhadas sobre um comando, você pode chamar este comando seguido de *ajuda*._\n_*Ex.:* @bot comando ajuda_"
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
 // SlackListLoadBalancers é a função responsável por retornar para o usuário a lista
@@ -99,11 +140,13 @@ func (s *SlackListener) SlackListLoadBalancers(ev *slack.MessageEvent) {
 		lines = append(lines, line)
 	}
 
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText("*Lista de Load Balancers:*", false))
+	msg := "*Lista de Load Balancers:*"
 
 	for _, line := range lines {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(line, false))
+		msg += fmt.Sprintf("\n%s", line)
 	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
 // SlackUpdateLoadBalancer é a função que busca a função em rancher.go para

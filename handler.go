@@ -66,8 +66,6 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch action.Name {
 	case actionSelect:
 		switch message.CallbackID {
-		case "update-haproxy":
-			actionHaproxyCfgUpdateFunction(message, w)
 		case "restart-container":
 			actionRestartContainerFunction(message, w)
 		case "logs-container":
@@ -84,24 +82,6 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-}
-
-func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
-	if len(message.Actions) < 3 {
-		return
-	}
-	lb := message.Actions[0].SelectedOptions[0].Value
-	newPercent := message.Actions[1].SelectedOptions[0].Value
-	oldPercent := message.Actions[2].SelectedOptions[0].Value
-
-	if lb != "" && newPercent != "" && oldPercent != "" {
-		resp := rancherListener.UpdateCustomHaproxyCfg(lb, newPercent, oldPercent)
-
-		responseMessage(w, message.OriginalMessage, "Configurações do Haproxy alteradas com sucesso!", fmt.Sprintf("`%s`", lb))
-		fmt.Printf("%v", resp)
-	}
-
-	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 }
 
 func actionRestartContainerFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {
