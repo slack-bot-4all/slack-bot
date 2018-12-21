@@ -123,10 +123,10 @@ func (s *SlackListener) SlackUpdateLoadBalancer(ev *slack.MessageEvent) {
 
 	resp := rancherListener.UpdateCustomHaproxyCfg(lb, newVersionPercent, oldVersionPercent)
 
-	// if !resp {
-	// 	s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto, se o conteúdo do haproxy.cfg atual está em branco ou se os pesos passados não somam 100", false))
-	// 	return
-	// }
+	if resp == "" {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto, se o conteúdo do haproxy.cfg atual está em branco ou se os pesos passados não somam 100", false))
+		return
+	}
 	//v := strconv.FormatBool(resp)
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText("Arquivo 'haproxy.cfg' alterado com sucesso!", false))
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("%s", resp), false))
