@@ -97,7 +97,8 @@ func actionHaproxyCfgUpdateFunction(message slack.AttachmentActionCallback, w ht
 	if lb != "" && newPercent != "" && oldPercent != "" {
 		resp := rancherListener.UpdateCustomHaproxyCfg(lb, newPercent, oldPercent)
 
-		responseMessage(w, message.OriginalMessage, "Configurações do Haproxy alteradas com sucesso!", fmt.Sprintf("`%s`", resp))
+		responseMessage(w, message.OriginalMessage, "Configurações do Haproxy alteradas com sucesso!", fmt.Sprintf("`%s`", lb))
+		fmt.Printf("%v", resp)
 	}
 
 	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)

@@ -43,7 +43,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.ConnectedEvent:
-			s.client.PostMessage(s.channelID, slack.MsgOptionText("Estou online! :nerd_face:", false))
+			s.client.PostMessage(s.channelID, slack.MsgOptionText("Fala mano, to aqui! :nerd_face:", false))
 			log.Println("[INFO] BOT iniciado com sucesso!")
 		case *slack.MessageEvent:
 			s.handleMessageEvent(ev)
@@ -170,7 +170,7 @@ func (s *SlackListener) SlackLogsContainer(ev *slack.MessageEvent) {
 	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
-// Função responsável por fazer o reinício de um container dentro do Rancher
+// SlackRestartContainer Função responsável por fazer o reinício de um container dentro do Rancher
 func (s *SlackListener) SlackRestartContainer(ev *slack.MessageEvent) {
 	// Criando attachment e setando options como a lista de opcoes que foi
 	// iterada acima
