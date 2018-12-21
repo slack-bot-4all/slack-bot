@@ -6,7 +6,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/rgamba/evtwebsocket"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
 
 // RancherListener é uma estrutura onde ficam armazenados os dados de acesso ao Rancher API
@@ -151,7 +151,8 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 
 	client := &http.Client{}
 
-	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
+	responseString := ranchListener.GetHaproxyCfg(ID)
+	actualLbConfig := gjson.Get(responseString, "lbConfig.config").String()
 
 	if actualLbConfig == "" {
 		return "error"
@@ -162,6 +163,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	var firstWeight string
 	var secondWeight string
 	var newLbConfig string
+
 	for scanner.Scan() {
 		if line := strings.Split(scanner.Text(), "weight "); len(line) >= 2 {
 			if firstWeight == "" {
@@ -173,24 +175,19 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 			}
 		}
 	}
+
 	v := fmt.Sprintf("%s", newLbConfig)
 
-	lbConfig := &LoadBalancerServices{
-		LbConfig: &LbConfig{
-			Config: newLbConfig,
-		},
-	}
+	responseString, err := sjson.Set(responseString, "lbConfig.config", newLbConfig)
+	CheckErr("Erro ao setar novo Custom haproxy.cfg no JSON", err)
 
-	payload, err := json.Marshal(lbConfig)
-	CheckErr("Erro ao fazer conversão de struct para JSON", err)
+	payload := strings.NewReader(responseString)
 
-	payloadReader := bytes.NewReader(payload)
-
-	req, err := ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/loadBalancerServices/"+ID), payloadReader)
-	CheckErr("Erro ao montar requisição", err)
+	req, err := ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/loadBalancerServices/"+ID), payload)
+	CheckErr("Erro ao montar requisição PUT", err)
 
 	resp, err := client.Do(req)
-	CheckErr("Erro ao enviar requisição", err)
+	CheckErr("Erro ao enviar requisição PUT", err)
 	defer resp.Body.Close()
 
 	return v
@@ -212,9 +209,8 @@ func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
 	}
 
 	responseString := ConvertResponseToString(resp.Body)
-	lbConfig := gjson.Get(responseString, "lbConfig.config").String()
 
-	return lbConfig
+	return responseString
 }
 
 // GetLoadBalancers é a função responsável por trazer um slice
