@@ -129,6 +129,7 @@ func (s *SlackListener) SlackUpdateLoadBalancer(ev *slack.MessageEvent) {
 	}
 
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText("Arquivo 'haproxy.cfg' alterado com sucesso!", false))
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("%s", lb), false))
 }
 
 // SlackSplunk é a função responsável por retornar informações sobre o Splunk
