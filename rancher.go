@@ -141,12 +141,12 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 }
 
 // UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
-func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) bool {
+func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) string {
 	newPercentToInteger, _ := strconv.Atoi(newPercent)
 	oldPercentToInteger, _ := strconv.Atoi(oldPercent)
 
 	if (newPercentToInteger + oldPercentToInteger) != 100 {
-		return false
+		return "error"
 	}
 
 	client := &http.Client{}
@@ -154,7 +154,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	actualLbConfig := ranchListener.GetHaproxyCfg(ID)
 
 	if actualLbConfig == "" {
-		return false
+		return "error"
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
@@ -173,6 +173,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 			}
 		}
 	}
+	v := fmt.Sprintf("%s", newLbConfig)
 
 	lbConfig := &LoadBalancerServices{
 		LbConfig: &LbConfig{
@@ -192,7 +193,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	CheckErr("Erro ao enviar requisição", err)
 	defer resp.Body.Close()
 
-	return true
+	return v
 }
 
 // GetHaproxyCfg Busca a Custom haproxy.cfg do LoadBalancer enviado como parâmetro
