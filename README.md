@@ -1,5 +1,9 @@
 # Slack-bot for Rancher
 
+- [Como funciona?](#como-funciona)
+- [Como usar?](#como-usar)
+- [Comandos disponíveis](#comandos-disponiveis)
+
 O ***SLfR*** (Slack-bot for Rancher), é uma aplicação responsável pela automação de tarefas no Rancher 1.6, utilizando a API do Rancher e Slack.
 
 O intuito do bot é facilitar tarefas que são comuns a usuários do Rancher, tais como: 
@@ -79,3 +83,10 @@ slack-bot@pc:~$ docker run -d -p PORTA_HTTP:PORTA_HTTP -e "FILE=.env" usuario/no
 Lembre-se de externalizar a porta HTTP que você definiu no ```.env```, para que assim, o Slack API possa acessar a URL.
 
 **Pronto, agora o BOT já estará rodando, basta verificar no canal do Slack que você definiu para ele ouvir as mensagens se ele enviou a mensagem avisando que está online, e basta usá-lo! :blush:**
+
+## Comandos disponíveis
+
+| Comando  | Descrição | Uso | 
+| :-------------: | ------------- | ------------- |
+| `restart-container`  | Comando responsável por fazer o reinício do container especificado  | @bot-rancher restart-container |
+| `logs-container` | Comando responsável por retornar os logs do container especificado até o momento que for acionada a ação | @bot-rancher logs-container |
