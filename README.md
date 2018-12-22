@@ -3,6 +3,7 @@
 - [Como funciona?](#como-funciona)
 - [Como usar?](#como-usar)
 - [Comandos disponíveis](#comandos-disponíveis)
+- [Contribuição](#contribuicao)
 
 O ***SLfR*** (Slack-bot for Rancher), é uma aplicação responsável pela automação de tarefas no Rancher 1.6, utilizando a API do Rancher e Slack.
 
@@ -93,3 +94,6 @@ Lembre-se de externalizar a porta HTTP que você definiu no ```.env```, para que
 | `haproxy-update` | *Comando que faz alteração nos pesos do Canary Deployment* |
 | `lb-list` | Comando que trás a lista de ID \| Nome dos Load Balancers do Environment |
 | `comandos` | Comando responsável por mostrar os comandos que estão disponíveis no BOT |
+
+## Contribuição
+Estamos totalmente abertos à contriuições. Trata-se de um projeto **Open Source**, portanto, o que você tiver de acrescentar em nosso projeto, é só acrescentar e fazer o pull request.
