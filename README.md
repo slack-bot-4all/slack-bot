@@ -18,7 +18,7 @@ O intuito do bot é facilitar tarefas que são comuns a usuários do Rancher, ta
 
 Para entender melhor com funciona um bot dentro do slack, saiba mais aqui [Slack-bot](https://api.slack.com/bot-users) .
 
-Atualmente, existem apenas duas funcionalidades, que são o ***@rancher_bot restart-container*** e ***@rancher_bot logs-container***. Ao chamar o bot passando qualquer uma das funcionalidades, o retorno será algo como isto: 
+Duas das funcionalidades que o BOT provém são o ***@rancher_bot restart-container*** e ***@rancher_bot logs-container***. Ao chamar o bot passando qualquer uma das funcionalidades, o retorno será algo como isto: 
 
 ![restart_container](images/restart-container.png)
 
