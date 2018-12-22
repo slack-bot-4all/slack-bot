@@ -103,7 +103,7 @@ Estamos totalmente abertos à contriuições. Trata-se de um projeto **Open Sour
 Caso seja necessário a adição de novos comandos, basta adicionar a constante em `slack.go`, no grupo de constantes globais
 ```golang
 const (
-	seuComando = "comoSeráChamadoNoSlack"
+    seuComando = "comoSeráChamadoNoSlack"
 )
 ```
 Após isso, ainda em `slack.go`, procure pela função `handleMessageEvent` vá até o final da função, veja que terá uma cadeira de estruturas de condição (IfElse), adicione mais um `else if() {}` com as regras abaixo:
