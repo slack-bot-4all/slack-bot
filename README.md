@@ -86,7 +86,7 @@ Lembre-se de externalizar a porta HTTP que você definiu no ```.env```, para que
 
 ## Comandos disponíveis
 
-| Comando  | Descrição | Uso | 
-| :-------------: | ------------- | ------------- |
-| `restart-container`  | Comando responsável por fazer o reinício do container especificado  | @bot-rancher restart-container |
-| `logs-container` | Comando responsável por retornar os logs do container especificado até o momento que for acionada a ação | @bot-rancher logs-container |
+| Comando | Descrição |
+| --- | ------------- |
+| `restart-container` | Comando responsável por fazer o reinício do container especificado |
+| `logs-container` | Comando responsável por retornar os logs do container especificado até o momento que for acionada a ação |
