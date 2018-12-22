@@ -4,6 +4,7 @@
 - [Como usar?](#como-usar)
 - [Comandos disponíveis](#comandos-disponíveis)
 - [Contribuição](#contribuição)
+- [Adição de novos comandos]()
 
 O ***SLfR*** (Slack-bot for Rancher), é uma aplicação responsável pela automação de tarefas no Rancher 1.6, utilizando a API do Rancher e Slack.
 
@@ -97,3 +98,34 @@ Lembre-se de externalizar a porta HTTP que você definiu no ```.env```, para que
 
 ## Contribuição
 Estamos totalmente abertos à contriuições. Trata-se de um projeto **Open Source**, portanto, o que você tiver de acrescentar em nosso projeto, é só acrescentar e fazer o pull request.
+
+## Adição de novos comandos
+Caso seja necessário a adição de novos comandos, basta adicionar a constante em `slack.go`, no grupo de constantes globais
+```golang
+const (
+	haproxyUpdate    = "haproxy-update"
+	haproxyList      = "lb-list"
+	logsContainer    = "logs-container"
+	restartContainer = "restart-container"
+	comandos         = "comandos"
+	seuComando       = "comoSeráChamadoNoSlack"
+)
+```
+Após isso, ainda em `slack.go`, procure pela função `handleMessageEvent` vá até o final da função, veja que terá uma cadeira de estruturas de condição (IfElse), adicione mais um `else if() {}` com as regras abaixo:
+```golang
+else if strings.HasPrefix(message, nomeDaConstanteQueVocêCriou) {
+    funcaoQueProcessaraOComando()
+}
+```
+
+Após isso, adicione seu comando em `comandos.go`, dentro do **slice** chamado `Commands`. *Obs.: Este passo é opcional, caso não seja colocado, seu comando não aparecerá na lista de comandos, porém, funcionará*.
+```golang
+var Commands = []Command{
+    {
+        Cmd: "comoSeráChamadoNoSlack",
+        Description: "Descrição do seu comando, explicando para que serve",
+        Usage: "Como seu comando será usado (recomendamos que referencie o comando como 'comando', pois quando for chamado o método de listagem de comandos, o mesmo será substituído pelo comando em si)",
+        Lint: "Caso seu comando receba argumentos ou você deseja deixar alguma dica sobre o comando, coloque-a aqui",
+    },
+}
+```
