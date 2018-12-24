@@ -77,12 +77,12 @@ func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 
 	url := fmt.Sprintf("%s/%s/containers/%s?action=logs", ranchListener.baseURL, ranchListener.projectID, containerID)
 
-	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, data.Encode())
+	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, `{"follow": true, "lines": 50}`)
 
-	tokenValue := gjson.Get(resp, "token")
-	urlValue := gjson.Get(resp, "url")
+	tokenValue := gjson.Get(resp, "token").String()
+	urlValue := gjson.Get(resp, "url").String()
 
-	urlAndToken := fmt.Sprintf("%s?token=%s", urlValue.String(), tokenValue.String())
+	urlAndToken := fmt.Sprintf("%s?token=%s", urlValue, tokenValue)
 
 	t := time.Now()
 
