@@ -5,10 +5,9 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"log"
-	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -54,60 +53,40 @@ type LoadBalancer struct {
 
 // RestartContainer : Função responsável por dar restart no container recebido por parâmetro
 func (ranchListener *RancherListener) RestartContainer(containerID string) {
-	client := &http.Client{}
+	url := fmt.Sprintf("%s/%s/containers/%s?action=restart", ranchListener.baseURL, ranchListener.projectID, containerID)
+	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, "")
 
-	req, err := ranchListener.MakeHTTPPOSTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/containers/"+containerID+"?action=restart"), nil)
-	CheckErr("Erro ao montar requisição", err)
+	idValue := gjson.Get(resp, "id").String()
 
-	resp, err := client.Do(req)
-	CheckErr("Erro ao enviar requisição", err)
-	defer resp.Body.Close()
-
-	responseString := ConvertResponseToString(resp.Body)
-	idValue := gjson.Get(responseString, "id")
-
-	log.Println(fmt.Sprintf("Container restartado! ID: %+v", idValue))
+	log.Println("Container restartado! ID:", idValue)
 }
 
 // ListContainers é uma função que retornará uma lista de todos os containers de um projeto/environment
 func (ranchListener *RancherListener) ListContainers() string {
-	client := &http.Client{}
+	url := fmt.Sprintf("%s/%s/containers", ranchListener.baseURL, ranchListener.projectID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
-	req, err := ranchListener.MakeHTTPGETRequest(fmt.Sprintf(ranchListener.baseURL + "/" + ranchListener.projectID + "/containers/"))
-	CheckErr("Erro ao montar requisição", err)
-
-	resp, err := client.Do(req)
-	CheckErr("Erro ao enviar requisição", err)
-	defer resp.Body.Close()
-
-	responseString := ConvertResponseToString(resp.Body)
-
-	return responseString
+	return resp
 }
 
 // LogsContainer : Função responsável retornar os logs do container
 func (ranchListener *RancherListener) LogsContainer(containerID string) string {
-	client := &http.Client{}
+	data := &url.Values{}
+	data.Add("follow", "true")
+	data.Add("lines", "50")
 
-	var jsonStr = []byte(`{"follow": true, "lines": 50}`)
+	url := fmt.Sprintf("%s/%s/containers/%s?action=logs", ranchListener.baseURL, ranchListener.projectID, containerID)
 
-	req, err := ranchListener.MakeHTTPPOSTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/containers/"+containerID+"?action=logs"), bytes.NewBuffer(jsonStr))
-	req.Header.Set("Content-Type", "application/json")
-	CheckErr("Erro ao montar requisição", err)
+	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, data.Encode())
 
-	resp, err := client.Do(req)
-	CheckErr("Erro ao enviar requisição", err)
-	defer resp.Body.Close()
-
-	responseString := ConvertResponseToString(resp.Body)
-	tokenValue := gjson.Get(responseString, "token")
-	urlValue := gjson.Get(responseString, "url")
+	tokenValue := gjson.Get(resp, "token")
+	urlValue := gjson.Get(resp, "url")
 
 	urlAndToken := fmt.Sprintf("%s?token=%s", urlValue.String(), tokenValue.String())
 
 	t := time.Now()
 
-	f, err := os.Create(fmt.Sprintf("/tmp/logs-container-%d%d%d%02d%02d%02d.log", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second()))
+	f, _ := os.Create(fmt.Sprintf("/tmp/logs-container-%d%d%d%02d%02d%02d.log", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second()))
 
 	SocketConnectionLogsContainer(urlAndToken, f.Name())
 
@@ -146,15 +125,15 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	oldPercentToInteger, _ := strconv.Atoi(oldPercent)
 
 	if (newPercentToInteger + oldPercentToInteger) != 100 {
+		fmt.Println("OII")
 		return "error"
 	}
-
-	client := &http.Client{}
 
 	responseString := ranchListener.GetHaproxyCfg(ID)
 	actualLbConfig := gjson.Get(responseString, "lbConfig.config").String()
 
 	if actualLbConfig == "" {
+		fmt.Println("OI")
 		return "error"
 	}
 
@@ -176,61 +155,37 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 		}
 	}
 
-	v := fmt.Sprintf("%s", newLbConfig)
-
 	responseString, err := sjson.Set(responseString, "lbConfig.config", newLbConfig)
 	CheckErr("Erro ao setar novo Custom haproxy.cfg no JSON", err)
 
-	payload := strings.NewReader(responseString)
+	url := fmt.Sprintf("%s/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
 
-	req, err := ranchListener.MakeHTTPPUTRequest(fmt.Sprintf(ranchListener.baseURL+"/"+ranchListener.projectID+"/loadBalancerServices/"+ID), payload)
-	CheckErr("Erro ao montar requisição PUT", err)
-
-	resp, err := client.Do(req)
-	CheckErr("Erro ao enviar requisição PUT", err)
-	defer resp.Body.Close()
-
-	return v
+	return gjson.Get(resp, "lbConfig.config").String()
 }
 
 // GetHaproxyCfg Busca a Custom haproxy.cfg do LoadBalancer enviado como parâmetro
 func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
-	client := &http.Client{}
+	url := fmt.Sprintf(ranchListener.baseURL + "/" + ranchListener.projectID + "/loadBalancerServices/" + containerID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
-	req, err := ranchListener.MakeHTTPGETRequest(fmt.Sprintf(ranchListener.baseURL + "/" + ranchListener.projectID + "/loadBalancerServices/" + containerID))
-	CheckErr("Erro ao montar requisição de haproxy.cfg", err)
-
-	resp, err := client.Do(req)
-	CheckErr("Erro ao enviar requisição", err)
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
+	if gjson.Get(resp, "id").String() != containerID {
 		return ""
 	}
 
-	responseString := ConvertResponseToString(resp.Body)
-
-	return responseString
+	return resp
 }
 
 // GetLoadBalancers é a função responsável por trazer um slice
 // de LoadBalancer, que pode ser usado para selects na interface
 // do BOT do Slack
 func (ranchListener *RancherListener) GetLoadBalancers() []*LoadBalancer {
-	client := &http.Client{}
-
-	req, err := ranchListener.MakeHTTPGETRequest(fmt.Sprintf(ranchListener.baseURL + "/" + ranchListener.projectID + "/loadBalancerServices"))
-	CheckErr("Erro ao montar requisição em GetLoadBalancers()", err)
-
-	resp, err := client.Do(req)
-	CheckErr("Erro ao enviar requisição em GetLoadBalancers()", err)
-	defer resp.Body.Close()
-
-	respString := ConvertResponseToString(resp.Body)
+	url := fmt.Sprintf("%s/%s/loadBalancerServices", ranchListener.baseURL, ranchListener.projectID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	loadBalancersSlice := []*LoadBalancer{}
 
-	data := gjson.Get(respString, "data")
+	data := gjson.Get(resp, "data")
 	data.ForEach(func(key, value gjson.Result) bool {
 		lb := new(LoadBalancer)
 		lb.ID = value.Get("id").String()
