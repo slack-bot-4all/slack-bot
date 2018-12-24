@@ -102,6 +102,8 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 
 	api := getAPIConnection()
 
+	log.Println(fileName)
+
 	file, err := api.client.UploadFile(slack.FileUploadParameters{
 		File:     fileName,
 		Filetype: "text",
@@ -110,8 +112,6 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 		},
 	})
 	CheckErr("Erro ao fazer upload de arquivo de logs de container", err)
-
-	log.Printf("%+v", file)
 
 	originalMessage := message.OriginalMessage
 	originalMessage.Files = []slack.File{
