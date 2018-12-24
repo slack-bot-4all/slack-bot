@@ -86,7 +86,8 @@ func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 
 	t := time.Now()
 
-	f, _ := os.Create(fmt.Sprintf("/tmp/logs-container-%d%d%d%02d%02d%02d.log", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second()))
+	f, err := os.Create(fmt.Sprintf("/tmp/logs-container-%d%d%d%02d%02d%02d.log", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second()))
+	CheckErr("Erro na criação do arquivo de logs", err)
 
 	SocketConnectionLogsContainer(urlAndToken, f.Name())
 
