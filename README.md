@@ -92,9 +92,12 @@ Lembre-se de externalizar a porta HTTP que você definiu no ```.env```, para que
 | ------- | --------- |
 | `restart-container` | *Comando responsável por fazer o reinício do container especificado* |
 | `logs-container` | *Comando responsável por retornar os logs do container especificado até o momento que for acionada a ação* |
-| `haproxy-update` | *Comando que faz alteração nos pesos do Canary Deployment* |
-| `lb-list` | Comando que trás a lista de ID \| Nome dos Load Balancers do Environment |
-| `comandos` | Comando responsável por mostrar os comandos que estão disponíveis no BOT |
+| `update-haproxy` | *Comando que faz alteração nos pesos do Canary Deployment* |
+| `list-lb` | *Comando que trás a lista de ID \| Nome dos Load Balancers do Environment* |
+| `info-service` | *Comando que trás informações de um serviço que será especificado* |
+| `upgrade-service` | *Comando que fará um upgrade de um serviço, alterando sua imagem de acordo com a que for passada como parâmetro* |
+| `list-service` | *Comando que trás uma lista de ID \| Nome dos serviços do Environment* |
+| `comandos` | *Comando responsável por mostrar os comandos que estão disponíveis no BOT* |
 
 ## Contribuição
 Estamos totalmente abertos à contriuições. Trata-se de um projeto **Open Source**, portanto, o que você tiver de acrescentar em nosso projeto, é só acrescentar e fazer o pull request.
