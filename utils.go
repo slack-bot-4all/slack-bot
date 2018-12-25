@@ -5,7 +5,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -14,9 +13,7 @@ import (
 // CheckErr : Função feita para checar os erros
 func CheckErr(message string, err error) {
 	if err != nil {
-		log.Printf("[ERROR] %s", message)
-		fmt.Printf("%+v", err)
-		panic(err)
+		log.Printf("[ERROR] %s\n%s", message, err)
 	}
 }
 
