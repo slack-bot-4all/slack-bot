@@ -14,7 +14,7 @@ import (
 // CheckErr : Função feita para checar os erros
 func CheckErr(message string, err error) {
 	if err != nil {
-		log.Println(message)
+		log.Printf("[ERROR] %s", message)
 		fmt.Printf("%+v", err)
 		panic(err)
 	}

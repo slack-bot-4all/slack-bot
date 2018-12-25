@@ -59,7 +59,7 @@ func (ranchListener *RancherListener) RestartContainer(containerID string) {
 
 	idValue := gjson.Get(resp, "id").String()
 
-	log.Println("Container restartado! ID:", idValue)
+	log.Println("[INFO] Container restartado! ID:", idValue)
 }
 
 // ListContainers é uma função que retornará uma lista de todos os containers de um projeto/environment
