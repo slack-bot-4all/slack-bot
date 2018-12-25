@@ -69,6 +69,15 @@ func (ranchListener *RancherListener) ListContainers() string {
 	return resp
 }
 
+// GetContainer é uma função que retorna o JSON de uma requisição que busca
+// informações de um único container
+func (ranchListener *RancherListener) GetContainer(ID string) string {
+	url := fmt.Sprintf("%s/%s/containers/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
+
+	return resp
+}
+
 // LogsContainer : Função responsável retornar os logs do container
 func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 	data := &url.Values{}

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/nlopes/slack"
+	"github.com/tidwall/gjson"
 )
 
 // interactionHandler handles interactive message response.
@@ -19,12 +20,8 @@ type interactionHandler struct {
 }
 
 const (
-	actionSelect           = "select"
-	actionConfirm          = "confirm"
-	actionCancel           = "cancel"
-	actionRestartContainer = "restart-container"
-	actionLogsContainer    = "logs-container"
-	actionHaproxyCfgUpdate = "update-haproxy"
+	actionSelect = "select"
+	actionCancel = "cancel"
 )
 
 func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +67,8 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			actionRestartContainerFunction(message, w)
 		case "logs-container":
 			actionLogsContainerFunction(message, w)
+		case "info-container":
+			actionGetContainerInfo(message, w)
 		default:
 			return
 		}
@@ -82,6 +81,21 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func actionGetContainerInfo(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+	value := message.Actions[0].SelectedOptions[0].Value
+	resp := rancherListener.GetContainer(value)
+
+	idContainer := gjson.Get(resp, "id").String()
+	nameContainer := gjson.Get(resp, "name").String()
+	imageContainer := gjson.Get(resp, "imageUuid").String()
+
+	msg := fmt.Sprintf("*ID:* `%s`\n*Nome:* `%s`\n*Imagem:* `%s`", idContainer, nameContainer, imageContainer)
+
+	sendMessage(msg)
+
+	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 }
 
 func actionRestartContainerFunction(message slack.AttachmentActionCallback, w http.ResponseWriter) {

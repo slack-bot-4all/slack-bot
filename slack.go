@@ -6,7 +6,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/nlopes/slack"
@@ -18,6 +17,7 @@ const (
 	haproxyList      = "lb-list"
 	logsContainer    = "logs-container"
 	restartContainer = "restart-container"
+	getContainerInfo = "info-container"
 	comandos         = "comandos"
 )
 
@@ -79,7 +79,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
-	if strings.HasPrefix(message, actionRestartContainer) {
+	if strings.HasPrefix(message, restartContainer) {
 		s.SlackRestartContainer(ev)
 	} else if strings.HasPrefix(message, logsContainer) {
 		s.SlackLogsContainer(ev)
@@ -87,11 +87,41 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.SlackUpdateLoadBalancer(ev)
 	} else if strings.HasPrefix(message, haproxyList) {
 		s.SlackListLoadBalancers(ev)
+	} else if strings.HasPrefix(message, getContainerInfo) {
+		s.SlackContainerInfo(ev)
 	} else if strings.HasPrefix(message, comandos) {
 		s.SlackHelper(ev)
 	}
 
 	return nil
+}
+
+// SlackContainerInfo é a função que envia um Attachment para o Slack com
+// a lista de containers que tem no Environment, após isso, o usuário
+// selecionará um container, que com isso, o BOT retornará informações sobre
+// esse container
+func (s *SlackListener) SlackContainerInfo(ev *slack.MessageEvent) {
+	var attachment = slack.Attachment{
+		Text:       "Qual container deseja obter informações? :sunglasses:",
+		Color:      "#0C648A",
+		CallbackID: "info-container",
+		Actions: []slack.AttachmentAction{
+			{
+				Name:    "select",
+				Type:    "select",
+				Options: getContainers(),
+			},
+			{
+				Name:  "cancel",
+				Text:  "Cancelar",
+				Type:  "button",
+				Style: "danger",
+			},
+		},
+	}
+
+	// Mandando a mensagem pro Slack com o Attachment feito acima
+	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
 // SlackCommandHelper é a função que retorna melhores informações
@@ -287,18 +317,6 @@ func getLbOptions() []slack.AttachmentActionOption {
 		opcoes = append(opcoes, slack.AttachmentActionOption{
 			Text:  fmt.Sprintf("%s | %s", lb.ID, lb.Name),
 			Value: lb.ID,
-		})
-	}
-
-	return opcoes
-}
-
-func percentOptions() []slack.AttachmentActionOption {
-	opcoes := []slack.AttachmentActionOption{}
-	for i := 0; i < 100; i++ {
-		opcoes = append(opcoes, slack.AttachmentActionOption{
-			Text:  fmt.Sprintf("%d%%", i),
-			Value: strconv.Itoa(i),
 		})
 	}
 
