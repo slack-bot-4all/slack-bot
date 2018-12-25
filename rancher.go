@@ -5,6 +5,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -78,6 +79,30 @@ func (ranchListener *RancherListener) GetService(ID string) string {
 	return resp
 }
 
+// UpgradeService é a função que faz o upgrade da imagem do serviço, recebendo
+// como parâmetro o ID do serviço e o nome da nova imagem do serviço
+func (ranchListener *RancherListener) UpgradeService(ID string, newImage string) string {
+	var data interface{}
+	var jsonRequest string
+
+	originalServiceCfg := ranchListener.GetService(ID)
+
+	originalServiceCfg, err := sjson.Set(originalServiceCfg, "launchConfig.imageUuid", newImage)
+	CheckErr("Erro ao setar valor de nova variável no JSON do serviço", err)
+
+	launchConfigOri := gjson.Get(originalServiceCfg, "launchConfig").String()
+
+	json.Unmarshal([]byte(launchConfigOri), &data)
+
+	jsonRequest, err = sjson.Set(jsonRequest, "inServiceStrategy.launchConfig", data)
+	CheckErr("Erro ao setar valor de nova variável no JSON do serviço", err)
+
+	url := fmt.Sprintf("%s/%s/services/%s?action=upgrade", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, jsonRequest)
+
+	return gjson.Get(resp, "launchConfig.imageUuid").String()
+}
+
 // ListServices é uma função que retorna o JSON (em string) de uma requisição que tem como
 // objetivo buscar todos os serviços do Environment
 func (ranchListener *RancherListener) ListServices() string {
@@ -144,7 +169,6 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	oldPercentToInteger, _ := strconv.Atoi(oldPercent)
 
 	if (newPercentToInteger + oldPercentToInteger) != 100 {
-		fmt.Println("OII")
 		return "error"
 	}
 
@@ -152,7 +176,6 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	actualLbConfig := gjson.Get(responseString, "lbConfig.config").String()
 
 	if actualLbConfig == "" {
-		fmt.Println("OI")
 		return "error"
 	}
 

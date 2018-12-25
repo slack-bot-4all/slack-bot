@@ -11,13 +11,13 @@ type Command struct {
 // Commands é a variável que guarda todos os comandos do BOT
 var Commands = []Command{
 	{
-		Cmd:         "haproxy-update",
+		Cmd:         "update-haproxy",
 		Description: "Comando que faz alteração nos pesos do Canary Deployment",
 		Usage:       "@bot comando `id-lb` `porc-new` `porc-old`",
 		Lint:        "`id-lb` ID do Load Balancer a ser editado | `porc-new` Porcentagem que será adicionada na nova versão | `porc-old` Porcentagem que será adicionada na antiga versão",
 	},
 	{
-		Cmd:         "lb-list",
+		Cmd:         "list-lb",
 		Description: "Comando que trás a lista de ID | Nome dos Load Balancers do Environment",
 		Usage:       "@bot comando",
 		Lint:        "",
@@ -39,6 +39,18 @@ var Commands = []Command{
 		Description: "Comando que busca informações sobre o serviço selecionado",
 		Usage:       "@bot comando",
 		Lint:        "Aparecerá uma caixa de seleção, onde será selecionado o serviço a ser buscado",
+	},
+	{
+		Cmd:         "upgrade-service",
+		Description: "O comando faz o upgrade de um serviço mudando apenas sua imagem",
+		Usage:       "@bot comando `id-serviço` `nova-imagem`",
+		Lint:        "Em `id-serviço` coloque o ID referente ao serviço que você quer enviar a nova imagem e em `nova-imagem` coloque o nome da imagem a ser enviada",
+	},
+	{
+		Cmd:         "list-service",
+		Description: "O comando lista todos os serviços disponíveis no Environment, listando de forma resumida apenas ID e Nome",
+		Usage:       "@bot comando",
+		Lint:        "O formato de retorno será algo como ID: id-serviço | Nome: nome-serviço",
 	},
 	{
 		Cmd:         "comandos",

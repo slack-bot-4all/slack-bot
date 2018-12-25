@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	haproxyUpdate    = "haproxy-update"
-	haproxyList      = "lb-list"
+	haproxyUpdate    = "update-haproxy"
+	haproxyList      = "list-lb"
 	logsContainer    = "logs-container"
 	restartContainer = "restart-container"
 	getServiceInfo   = "info-service"
-	upgradeContainer = "upgrade-container"
+	upgradeService   = "upgrade-service"
+	listService      = "list-service"
 	comandos         = "comandos"
 )
 
@@ -90,8 +91,10 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.SlackListLoadBalancers(ev)
 	} else if strings.HasPrefix(message, getServiceInfo) {
 		s.SlackServiceInfo(ev)
-	} else if strings.HasPrefix(message, upgradeContainer) {
-		s.SlackContainerUpgrade(ev)
+	} else if strings.HasPrefix(message, listService) {
+		s.SlackServicesList(ev)
+	} else if strings.HasPrefix(message, upgradeService) {
+		s.SlackServiceUpgrade(ev)
 	} else if strings.HasPrefix(message, comandos) {
 		s.SlackHelper(ev)
 	}
@@ -99,9 +102,51 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	return nil
 }
 
-// SlackContainerUpgrade é a função responsável por fazer o upgrade da
+// SlackServiceUpgrade é a função responsável por fazer o upgrade da
 // imagem de um container que será recebido como parâmetro
-func (s *SlackListener) SlackContainerUpgrade(ev *slack.MessageEvent) {
+func (s *SlackListener) SlackServiceUpgrade(ev *slack.MessageEvent) {
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) != 4 {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-serviço nova-imagem", upgradeService), false))
+		return
+	}
+
+	serviceID := args[2]
+	newServiceImage := args[3]
+
+	if !strings.HasPrefix(newServiceImage, "docker:") {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("O nome da imagem deve começar com 'docker:'. Ex.: docker:ubuntu:14.04", false))
+		return
+	}
+
+	resp := rancherListener.UpgradeService(serviceID, newServiceImage)
+
+	if resp == "" {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro no upgrade do serviço. Você pode verificar:\n*- Se o ID do serviço que foi passado realmente existe*\n*- Se o serviço já não está passando por um processo de Upgrade*", false))
+		return
+	}
+
+	msg := fmt.Sprintf("Serviço atualizado com sucesso! A nova imagem do serviço `%s` é `%s`", serviceID, resp)
+
+	log.Printf("[INFO] Serviço %s atualizado pelo usuário %s\n", serviceID, ev.Msg.User)
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
+}
+
+// SlackServicesList é a função que enviará uma mensagem no geral listando todos os
+// serviços que existem no Environment
+func (s *SlackListener) SlackServicesList(ev *slack.MessageEvent) {
+	resp := rancherListener.ListServices()
+
+	msg := "*Lista de serviços:* \n\n"
+
+	data := gjson.Get(resp, "data")
+	data.ForEach(func(key, value gjson.Result) bool {
+		msg += fmt.Sprintf("*ID:* `%s` | *Nome:* `%s`\n", value.Get("id").String(), value.Get("name").String())
+		return true
+	})
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
 // SlackServiceInfo é a função que envia um Attachment para o Slack com
