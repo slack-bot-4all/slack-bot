@@ -68,7 +68,7 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "logs-container":
 			actionLogsContainerFunction(message, w)
 		case "info-container":
-			actionGetContainerInfo(message, w)
+			actionGetServiceInfo(message, w)
 		default:
 			return
 		}
@@ -83,15 +83,17 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func actionGetContainerInfo(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+func actionGetServiceInfo(message slack.AttachmentActionCallback, w http.ResponseWriter) {
 	value := message.Actions[0].SelectedOptions[0].Value
-	resp := rancherListener.GetContainer(value)
+	resp := rancherListener.GetService(value)
 
-	idContainer := gjson.Get(resp, "id").String()
-	nameContainer := gjson.Get(resp, "name").String()
-	imageContainer := gjson.Get(resp, "imageUuid").String()
+	idService := gjson.Get(resp, "id").String()
+	nameService := gjson.Get(resp, "name").String()
+	imageService := gjson.Get(resp, "launchConfig.imageUuid").String()
+	stateService := gjson.Get(resp, "state").String()
+	createdDateService := gjson.Get(resp, "created").String()
 
-	msg := fmt.Sprintf("*ID:* `%s`\n*Nome:* `%s`\n*Imagem:* `%s`", idContainer, nameContainer, imageContainer)
+	msg := fmt.Sprintf("*ID:* `%s`\n*Nome:* `%s`\n*Imagem:* `%s`\n*Status:* `%s`\n*Data de Criação:* `%s`", idService, nameService, imageService, stateService, createdDateService)
 
 	sendMessage(msg)
 

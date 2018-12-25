@@ -35,10 +35,10 @@ var Commands = []Command{
 		Lint:        "Aparecerá uma caixa de seleção, onde será selecionado o container a ser restartado",
 	},
 	{
-		Cmd:         "info-container",
-		Description: "Comando que busca informações sobre o container selecionado",
+		Cmd:         "info-service",
+		Description: "Comando que busca informações sobre o serviço selecionado",
 		Usage:       "@bot comando",
-		Lint:        "Aparecerá uma caixa de seleção, onde será selecionado o container a ser buscado",
+		Lint:        "Aparecerá uma caixa de seleção, onde será selecionado o serviço a ser buscado",
 	},
 	{
 		Cmd:         "comandos",

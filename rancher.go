@@ -69,10 +69,19 @@ func (ranchListener *RancherListener) ListContainers() string {
 	return resp
 }
 
-// GetContainer é uma função que retorna o JSON de uma requisição que busca
-// informações de um único container
-func (ranchListener *RancherListener) GetContainer(ID string) string {
-	url := fmt.Sprintf("%s/%s/containers/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+// GetService é uma função que retorna o JSON de uma requisição que busca
+// informações de um único serviço
+func (ranchListener *RancherListener) GetService(ID string) string {
+	url := fmt.Sprintf("%s/%s/services/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
+
+	return resp
+}
+
+// ListServices é uma função que retorna o JSON (em string) de uma requisição que tem como
+// objetivo buscar todos os serviços do Environment
+func (ranchListener *RancherListener) ListServices() string {
+	url := fmt.Sprintf("%s/%s/services", ranchListener.baseURL, ranchListener.projectID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp

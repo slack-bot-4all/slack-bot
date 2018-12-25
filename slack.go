@@ -17,7 +17,8 @@ const (
 	haproxyList      = "lb-list"
 	logsContainer    = "logs-container"
 	restartContainer = "restart-container"
-	getContainerInfo = "info-container"
+	getServiceInfo   = "info-service"
+	upgradeContainer = "upgrade-container"
 	comandos         = "comandos"
 )
 
@@ -87,8 +88,10 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.SlackUpdateLoadBalancer(ev)
 	} else if strings.HasPrefix(message, haproxyList) {
 		s.SlackListLoadBalancers(ev)
-	} else if strings.HasPrefix(message, getContainerInfo) {
-		s.SlackContainerInfo(ev)
+	} else if strings.HasPrefix(message, getServiceInfo) {
+		s.SlackServiceInfo(ev)
+	} else if strings.HasPrefix(message, upgradeContainer) {
+		s.SlackContainerUpgrade(ev)
 	} else if strings.HasPrefix(message, comandos) {
 		s.SlackHelper(ev)
 	}
@@ -96,20 +99,25 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	return nil
 }
 
-// SlackContainerInfo é a função que envia um Attachment para o Slack com
-// a lista de containers que tem no Environment, após isso, o usuário
+// SlackContainerUpgrade é a função responsável por fazer o upgrade da
+// imagem de um container que será recebido como parâmetro
+func (s *SlackListener) SlackContainerUpgrade(ev *slack.MessageEvent) {
+}
+
+// SlackServiceInfo é a função que envia um Attachment para o Slack com
+// a lista de serviços que tem no Environment, após isso, o usuário
 // selecionará um container, que com isso, o BOT retornará informações sobre
-// esse container
-func (s *SlackListener) SlackContainerInfo(ev *slack.MessageEvent) {
+// esse serviço
+func (s *SlackListener) SlackServiceInfo(ev *slack.MessageEvent) {
 	var attachment = slack.Attachment{
-		Text:       "Qual container deseja obter informações? :sunglasses:",
+		Text:       "Qual serviço deseja obter informações? :sunglasses:",
 		Color:      "#0C648A",
 		CallbackID: "info-container",
 		Actions: []slack.AttachmentAction{
 			{
 				Name:    "select",
 				Type:    "select",
-				Options: getContainers(),
+				Options: getServices(),
 			},
 			{
 				Name:  "cancel",
@@ -307,6 +315,26 @@ func getContainers() []slack.AttachmentActionOption {
 			Value: container.id,
 		})
 	}
+
+	return opcoes
+}
+
+func getServices() []slack.AttachmentActionOption {
+	servicesList := rancherListener.ListServices()
+
+	opcoes := []slack.AttachmentActionOption{}
+
+	data := gjson.Get(servicesList, "data")
+	data.ForEach(func(key, value gjson.Result) bool {
+		serviceID := value.Get("id").String()
+		serviceName := value.Get("name").String()
+		opcoes = append(opcoes, slack.AttachmentActionOption{
+			Text:  fmt.Sprintf("%s | %s", serviceID, serviceName),
+			Value: serviceID,
+		})
+
+		return true
+	})
 
 	return opcoes
 }
