@@ -1,10 +1,10 @@
 # Slack-bot for Rancher
 
-- [How to Works?](#como-funciona)
-- [How to Use?](#como-usar)
-- [Available Commands](#comandos-disponíveis)
-- [Contribution](#contribuição)
-- [Adding New Commands](#adição-de-novos-comandos)
+- [How to Works?](#How-to-Works)
+- [How to Use?](#How-to-use)
+- [Available Commands](#Available-Commands)
+- [Contribution](#Contribution)
+- [Adding New Commands](#Adding-New-Commands)
 
 The ***SLfR*** (Slack-bot for Rancher), is an application responsible for task automation in Rancher 1.6, using the Rancher and Slack API.
 
@@ -35,11 +35,11 @@ First, let's go to the <a href="https://api.slack.com/apps" target="_blank"> Sla
 
 ![your_apps](images/your-apps.PNG)
 
-Let's click **Create New App**, it will open a window asking **App Name** that you will put the name of your application, and ** Development Slack Workspace ** that you will place where your app will work, which in the case, it will be on your Slack server. After that, click ** Create App **
+Let's click **Create New App**, it will open a window asking **App Name** that you will put the name of your application, and **Development Slack Workspace** that you will place where your app will work, which in the case, it will be on your Slack server. After that, click **Create App**
 
 After that, you will be redirected to the menu of your application, go to the option **OAuth & Permissions**, in Scopes> Select Permission Scopes you must select the permissions that your application will have, we recommend that you put the **Administer the workspace**, so that the application has access and permission to everything within Slack, but if your server is more careful, put the permissions as you prefer. Remember that the permissions you put in may influence the operation of the BOT.
 
-After putting the permission, the part of ** Scopes ** will look something like this:
+After putting the permission, the part of **Scopes** will look something like this:
 
 ![permissions](images/permissions.PNG)
 
@@ -49,13 +49,13 @@ After that, go to the option **Bot Users** and click **Add a Bot User** to add a
 
 After that, go back to **Basic Information** in the menu and look for **Install your app to your workspace**, click on this option, see that it will show some information next to the **Install App to Workspace** button, click button. When you click the button to install the application on your server, it will open a page asking you to authorize the application, click **Authorize**
 
-To use ***SLfR*** is simple, you will first need to download the source code (by cloning this repository) console slack-bot @ pc: ~ $ git clone https://github.com/cayohollanda/slack-bot-rancher.git
+To use ***SLfR*** is simple, you will first need to download the source code (by cloning this repository) console slack-bot @ pc: ~ $ git clone https://github.com/slack-bot-4all/slack-bot.git
 (I.e.
-After that, change the `` `.env``` file by adding the Rancher 1.6, BOT and HTTP port information that will run the API
+After that, change the ```.env``` file by adding the Rancher 1.6, BOT and HTTP port information that will run the API
 ```properties
 RANCHER_ACCESS_KEY=<ACCESS_KEY_DA_API_DO_RANCHER>
 RANCHER_SECRET_KEY=<SECRET_KEY_DA_API_DO_RANCHER>
-RANCHER_BASE_URL=<URL_BASE_DA_API> Ex.: http://seu.ip:8080/v1/projects
+RANCHER_BASE_URL=<URL_BASE_DA_API> Ex.: http://yourdomain.ip:8080/v1/projects
 RANCHER_PROJECT_ID=<ID_DO_ENVIRONMENT_BASE>
 SLACK_BOT_TOKEN=<TOKEN_DE_ACESS_DA_APP_DO_SLACK>
 SLACK_BOT_ID=<ID_DA_APP>
@@ -84,30 +84,30 @@ Remember to externalize the HTTP port you set in ```.env```, so that the Slack A
 
 **Done, now the BOT is already running, just check the Slack channel you have set for him to listen to the messages if he sent the message telling you it's online, and just use it! :blush:**
 
-## Commands Available
+## Available Commands
 
 | Command | Description |
 | ------- | --------- |
 | `restart-container` | *Command responsible for restarting specified container* |
 | `logs-container` | *Command responsible for returning the logs of the specified container until the action is triggered* |
 | `update-haproxy` | *Command that changes weights in Canary Deployment* |
-| `list-lb` | *Command that brings ID list \ | Environment Load Balancers Name* |
+| `list-lb` | *Command that brings ID list | Environment Load Balancers Name* |
 | `info-service` | *Command that brings information about a service that will be specified* |
 | `upgrade-service` | *Command that will make an upgrade of a service, changing its image according to which it is passed as parameter* |
-| `list-service` | *Command that brings an ID list \ | Environment Services Name* |
+| `list-service` | *Command that brings an ID list | Environment Services Name* |
 | `commands` | *Command responsible for displaying the commands that are available in BOT* |
 
 ## Contribution
 We are fully open to contri- butions. This is an **Open Source** project, so whatever you have to add in our project, just add and do the pull request.
 
-## Addition of new commands
+## Adding New Commands
 If it is necessary to add new commands, simply add the constant in `slack.go`, in the group of global constants
-golang
+```golang
 const (
     yourCommand = "SlacklikeCommand"
 )
 ```
-After that, still in `slack.go`, look for the` handleMessageEvent` function to go to the end of the function, see that it will have a condition structure chair (IfElse), add another `else if () {}` with the following rules:
+After that, still in `slack.go`, look for the `handleMessageEvent` function to go to the end of the function, see that it will have a condition structure chair (IfElse), add another `else if () {}` with the following rules:
 ```golang
 else if strings.HasPrefix(message, yourCommand) {
     funcProcessCommand()
@@ -115,7 +115,8 @@ else if strings.HasPrefix(message, yourCommand) {
 ```
 
 After that, add your command to `commands.go`, inside the **slice** called `Commands`. *Note: This step is optional, if not put, your command will not appear in the command list, however, it will work*.
-golang
+
+```golang
 var Commands = [] Command {
     {
         Cmd: "HowShouldNoSlack",
