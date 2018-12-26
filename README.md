@@ -114,7 +114,7 @@ else if strings.HasPrefix(message, yourCommand) {
 }
 ```
 
-After that, add your command to `commands.go`, inside the **slice** called `Commands`. * Note: This step is optional, if not put, your command will not appear in the command list, however, it will work *.
+After that, add your command to `commands.go`, inside the **slice** called `Commands`. *Note: This step is optional, if not put, your command will not appear in the command list, however, it will work*.
 golang
 var Commands = [] Command {
     {
