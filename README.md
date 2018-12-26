@@ -13,7 +13,6 @@ The bot's intent is to facilitate tasks that are common to Rancher users, such a
     - Check container health
     - Can restart containers
     - Getlogs
-    - Health & Fitness
     - Upgrades
 
 ## How to Works?
