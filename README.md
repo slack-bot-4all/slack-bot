@@ -52,15 +52,15 @@ To use ***SLfR*** is simple, you will first need to download the source code (by
 (I.e.
 After that, change the ```.env``` file by adding the Rancher 1.6, BOT and HTTP port information that will run the API
 ```properties
-RANCHER_ACCESS_KEY=<ACCESS_KEY_DA_API_DO_RANCHER>
-RANCHER_SECRET_KEY=<SECRET_KEY_DA_API_DO_RANCHER>
-RANCHER_BASE_URL=<URL_BASE_DA_API> Ex.: http://yourdomain.ip:8080/v1/projects
-RANCHER_PROJECT_ID=<ID_DO_ENVIRONMENT_BASE>
-SLACK_BOT_TOKEN=<TOKEN_DE_ACESS_DA_APP_DO_SLACK>
-SLACK_BOT_ID=<ID_DA_APP>
-SLACK_BOT_CHANNEL=<CANAL_ONDE_O_BOT_IRÁ_ESCUTAR_OS_COMANDOS>
-SLACK_BOT_VERIFICATION_TOKEN=<CODIGO_DE_VERIFICACAO_DO_BOT>
-HTTP_PORT=<PORTA_HTTP_ONDE_IRÁ_RODAR_A_API>
+RANCHER_ACCESS_KEY=<RANCHER_API_ACCESS_KEY>
+RANCHER_SECRET_KEY=<RANCHER_API_SECRET_KEY>
+RANCHER_BASE_URL=<API_BASE_URL> Ex.: http://yourdomain.ip:8080/v1/projects
+RANCHER_PROJECT_ID=<ENVIRONMENT_ID>
+SLACK_BOT_TOKEN=<API_SLACK_ACCESS_TOKEN>
+SLACK_BOT_ID=<BOT_ID>
+SLACK_BOT_CHANNEL=<CHANNEL_WHERE_THE_BOT_LISTEN_COMMANDS>
+SLACK_BOT_VERIFICATION_TOKEN=<BOT_VERIFICATION_TOKEN>
+HTTP_PORT=<HTTP_PORT>
 ```
 
 **Note: To get the BOT ID, you will need to first leave it blank and run the application (which will be taught below), you will get the BOT ID in the application logs, as in the image below.**
