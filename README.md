@@ -1,59 +1,57 @@
 # Slack-bot for Rancher
 
-- [Como funciona?](#como-funciona)
-- [Como usar?](#como-usar)
-- [Comandos disponíveis](#comandos-disponíveis)
-- [Contribuição](#contribuição)
-- [Adição de novos comandos](#adição-de-novos-comandos)
+- [How to Works?](#como-funciona)
+- [How to Use?](#como-usar)
+- [Available Commands](#comandos-disponíveis)
+- [Contribution](#contribuição)
+- [Adding New Commands](#adição-de-novos-comandos)
 
-O ***SLfR*** (Slack-bot for Rancher), é uma aplicação responsável pela automação de tarefas no Rancher 1.6, utilizando a API do Rancher e Slack.
+The ***SLfR*** (Slack-bot for Rancher), is an application responsible for task automation in Rancher 1.6, using the Rancher and Slack API.
 
-O intuito do bot é facilitar tarefas que são comuns a usuários do Rancher, tais como: 
+The bot's intent is to facilitate tasks that are common to Rancher users, such as:
 
-    - Verificar saúde de containers
-    - Poder fazer restart de containers
-    - Getlogs 
-    - Saúde dos servers
+    - Check container health
+    - Can restart containers
+    - Getlogs
+    - Health & Fitness
     - Upgrades
 
-## Como funciona?
+## How to Works?
 
-Para entender melhor com funciona um bot dentro do slack, saiba mais aqui [Slack-bot](https://api.slack.com/bot-users) .
+To better understand how a bot works inside the slack, learn more here [Slack-bot](https://api.slack.com/bot-users) .
 
-Duas das funcionalidades que o BOT provém são o ***@rancher_bot restart-container*** e ***@rancher_bot logs-container***. Ao chamar o bot passando qualquer uma das funcionalidades, o retorno será algo como isto: 
+Two of the features that the BOT comes from are the ***@rancher_bot restart-container*** and ***@rancher_bot logs-container***. When calling the bot by passing any of the features, the return will look something like this:
 
 ![restart_container](images/restart-container.png)
 
-O bot retornará para você uma lista de containers rodando no seu enviromment, que estará definido no arquivo **.env**. 
-A aplicação está dockerizada a fim de agilizar a execução e facilitar sua escalabilidade, caso haja necessidade.
+The bot will return you a list of containers running in your enviromment, which will be defined in the file **.env**. 
+The application is dockerized in order to speed up the execution and facilitate its scalability, if need be.
 
-Tendo em vista o funcionamento de bot's no slack, levantamos uma API para disponibilizar a sua URI ao slack, que é onde acontecerá as interpretações das ***Actions*** cadastradas para o bot.
+Given the bot's operation in the slack, we raised an API to make your URI available to the slack, which is where the interpretations of the ***Actions*** registered to the bot will happen.
 
-## Como usar?
+## How to use?
 
-Primeiramente, vamos acessar o site de <a href="https://api.slack.com/apps" target="_blank">APPS do Slack</a>, você cairá em uma página mais ou menos assim:
+First, let's go to the <a href="https://api.slack.com/apps" target="_blank"> Slack APPS </a> site, you'll fall into a page something like this:
 
 ![your_apps](images/your-apps.PNG)
 
-Vamos clicar em **Create New App**, irá abrir uma janela pedindo **App Name** que você colocará o nome da sua aplicação, e **Development Slack Workspace** que você colocará onde sua app irá funcionar, que no caso, será no seu servidor Slack. Após isso, clique em **Create App**
+Let's click **Create New App**, it will open a window asking **App Name** that you will put the name of your application, and ** Development Slack Workspace ** that you will place where your app will work, which in the case, it will be on your Slack server. After that, click ** Create App **
 
-Após isso, você irá ser redirecionado para o menu da sua aplicação, vá até a opção **OAuth & Permissions**, em Scopes > Select Permission Scopes você deverá selecionar as permissões que sua aplicação terá, recomendamos que coloque a permissão **Administer the workspace**, para que a aplicação tenha acesso e permissão para tudo dentro do Slack, mas caso seu servidor seja mais criterioso, coloque as permissões como preferir. Lembre-se que as permissões que você colocar podem influenciar no funcionamento do BOT.
+After that, you will be redirected to the menu of your application, go to the option **OAuth & Permissions**, in Scopes> Select Permission Scopes you must select the permissions that your application will have, we recommend that you put the **Administer the workspace**, so that the application has access and permission to everything within Slack, but if your server is more careful, put the permissions as you prefer. Remember that the permissions you put in may influence the operation of the BOT.
 
-Após colocar a permissão, a parte de **Scopes** ficará algo parecido com isso:
+After putting the permission, the part of ** Scopes ** will look something like this:
 
 ![permissions](images/permissions.PNG)
 
-Basta clicar em **Save Changes** para salvar o que foi feito.
+Just click **Save Changes** to save what was done.
 
-Após isso, vá na opção **Bot Users** e clique em **Add a Bot User** para adicionar um novo BOT à sua aplicação, personalize o nome que será mostrado e o usuário, e clique em **Save Changes**
+After that, go to the option **Bot Users** and click **Add a Bot User** to add a new BOT to your application, customize the name that will be displayed and the user, and click **Save Changes**
 
-Feito isso, volte em **Basic Information** no menu e procure por **Install your app to your workspace**, clique nesta opção, veja que irá mostrar algumas informações junto do botão **Install App to Workspace**, clique no botão. Ao clicar no botão para instalar a aplicação no seu servidor, abrirá uma página pedindo para você autorizar a aplicação, clique em **Authorize**
+After that, go back to **Basic Information** in the menu and look for **Install your app to your workspace**, click on this option, see that it will show some information next to the **Install App to Workspace** button, click button. When you click the button to install the application on your server, it will open a page asking you to authorize the application, click **Authorize**
 
-Para usar o ***SLfR*** é simples, primeiro você terá de baixar o código-fonte (fazendo o clone deste repositório)
-```console
-slack-bot@pc:~$ git clone https://github.com/cayohollanda/slack-bot-rancher.git
-```
-Após isso, altere o arquivo ```.env``` adicionando as informações do Rancher 1.6, BOT e porta HTTP que rodará a API
+To use ***SLfR*** is simple, you will first need to download the source code (by cloning this repository) console slack-bot @ pc: ~ $ git clone https://github.com/cayohollanda/slack-bot-rancher.git
+(I.e.
+After that, change the `` `.env``` file by adding the Rancher 1.6, BOT and HTTP port information that will run the API
 ```properties
 RANCHER_ACCESS_KEY=<ACCESS_KEY_DA_API_DO_RANCHER>
 RANCHER_SECRET_KEY=<SECRET_KEY_DA_API_DO_RANCHER>
@@ -66,64 +64,64 @@ SLACK_BOT_VERIFICATION_TOKEN=<CODIGO_DE_VERIFICACAO_DO_BOT>
 HTTP_PORT=<PORTA_HTTP_ONDE_IRÁ_RODAR_A_API>
 ```
 
-**Obs.: Para pegar o ID do BOT, você precisará antes deixá-lo em branco e rodar a aplicação (que será ensinado abaixo), você pegará o ID do BOT nos logs da aplicação, como na imagem abaixo.**
+**Note: To get the BOT ID, you will need to first leave it blank and run the application (which will be taught below), you will get the BOT ID in the application logs, as in the image below.**
 
 ![id-bot](images/id-bot.PNG)
 
-Com o arquivo ```.env``` alterado, você precisará decidir de que forma irá rodar, se deseja rodar na máquina onde está conectado, ou se deseja ***dockerizar***. Caso deseje rodar direto na máquina, basta executar os arquivos ```.go```, da seguinte forma:
+With the ```.env``` file changed, you will need to decide how to run, whether to run on the machine where you are connected, or if you want to ***dockerizer***. If you want to run directly on the machine, just run the ```.go``` files, as follows:
 ```console
 slack-bot@pc:~$ go run *.go
 ```
-Caso deseje ***dockerizar***, basta fazer o build da imagem Docker, nosso ```Dockerfile``` já vem pronto para ser buildado:
+If you want ***dockerizar***, just do the Docker image build, our ```Dockerfile``` is ready to be build:
 ```console
 slack-bot@pc:~$ docker build -t usuario/nome-da-imagem:versao .
 ```
-E após isso, basta dar o ***docker run*** na sua imagem já buildada:
+And after that, just give the ***docker run*** in your already-built image:
 ```console
-slack-bot@pc:~$ docker run -d -p PORTA_HTTP:PORTA_HTTP -e "FILE=.env" usuario/nome-da-imagem:versao
+slack-bot@pc:~$ docker run -d -p PORT_HTTP:PORT_HTTP -e "FILE=.env" user/image-name:version
 ```
-Lembre-se de externalizar a porta HTTP que você definiu no ```.env```, para que assim, o Slack API possa acessar a URL.
+Remember to externalize the HTTP port you set in ```.env```, so that the Slack API can access the URL.
 
-**Pronto, agora o BOT já estará rodando, basta verificar no canal do Slack que você definiu para ele ouvir as mensagens se ele enviou a mensagem avisando que está online, e basta usá-lo! :blush:**
+**Done, now the BOT is already running, just check the Slack channel you have set for him to listen to the messages if he sent the message telling you it's online, and just use it! :blush:**
 
-## Comandos disponíveis
+## Commands Available
 
-| Comando | Descrição |
+| Command | Description |
 | ------- | --------- |
-| `restart-container` | *Comando responsável por fazer o reinício do container especificado* |
-| `logs-container` | *Comando responsável por retornar os logs do container especificado até o momento que for acionada a ação* |
-| `update-haproxy` | *Comando que faz alteração nos pesos do Canary Deployment* |
-| `list-lb` | *Comando que trás a lista de ID \| Nome dos Load Balancers do Environment* |
-| `info-service` | *Comando que trás informações de um serviço que será especificado* |
-| `upgrade-service` | *Comando que fará um upgrade de um serviço, alterando sua imagem de acordo com a que for passada como parâmetro* |
-| `list-service` | *Comando que trás uma lista de ID \| Nome dos serviços do Environment* |
-| `comandos` | *Comando responsável por mostrar os comandos que estão disponíveis no BOT* |
+| `restart-container` | *Command responsible for restarting specified container* |
+| `logs-container` | *Command responsible for returning the logs of the specified container until the action is triggered* |
+| `update-haproxy` | *Command that changes weights in Canary Deployment* |
+| `list-lb` | *Command that brings ID list \ | Environment Load Balancers Name* |
+| `info-service` | *Command that brings information about a service that will be specified* |
+| `upgrade-service` | *Command that will make an upgrade of a service, changing its image according to which it is passed as parameter* |
+| `list-service` | *Command that brings an ID list \ | Environment Services Name* |
+| `commands` | *Command responsible for displaying the commands that are available in BOT* |
 
-## Contribuição
-Estamos totalmente abertos à contriuições. Trata-se de um projeto **Open Source**, portanto, o que você tiver de acrescentar em nosso projeto, é só acrescentar e fazer o pull request.
+## Contribution
+We are fully open to contri- butions. This is an **Open Source** project, so whatever you have to add in our project, just add and do the pull request.
 
-## Adição de novos comandos
-Caso seja necessário a adição de novos comandos, basta adicionar a constante em `slack.go`, no grupo de constantes globais
-```golang
+## Addition of new commands
+If it is necessary to add new commands, simply add the constant in `slack.go`, in the group of global constants
+golang
 const (
-    seuComando = "comoSeráChamadoNoSlack"
+    yourCommand = "SlacklikeCommand"
 )
 ```
-Após isso, ainda em `slack.go`, procure pela função `handleMessageEvent` vá até o final da função, veja que terá uma cadeira de estruturas de condição (IfElse), adicione mais um `else if() {}` com as regras abaixo:
+After that, still in `slack.go`, look for the` handleMessageEvent` function to go to the end of the function, see that it will have a condition structure chair (IfElse), add another `else if () {}` with the following rules:
 ```golang
-else if strings.HasPrefix(message, seuComando) {
-    funcaoQueProcessaraOComando()
+else if strings.HasPrefix(message, yourCommand) {
+    funcProcessCommand()
 }
 ```
 
-Após isso, adicione seu comando em `comandos.go`, dentro do **slice** chamado `Commands`. *Obs.: Este passo é opcional, caso não seja colocado, seu comando não aparecerá na lista de comandos, porém, funcionará*.
-```golang
-var Commands = []Command{
+After that, add your command to `commands.go`, inside the **slice** called `Commands`. * Note: This step is optional, if not put, your command will not appear in the command list, however, it will work *.
+golang
+var Commands = [] Command {
     {
-        Cmd: "comoSeráChamadoNoSlack",
-        Description: "Descrição do seu comando, explicando para que serve",
-        Usage: "Como seu comando será usado (recomendamos que referencie o comando como 'comando', pois quando for chamado o método de listagem de comandos, o mesmo será substituído pelo comando em si)",
-        Lint: "Caso seu comando receba argumentos ou você deseja deixar alguma dica sobre o comando, coloque-a aqui",
+        Cmd: "HowShouldNoSlack",
+        Description: "Description of your command, explaining what it is for",
+        Usage: "As your command will be used (we recommend that you refer to the command as 'command', because when the command listing method is called, it will be replaced by the command itself)
+        Lint: "If your command receives arguments or you want to leave any tips on the command, put it here",
     },
 }
 ```
