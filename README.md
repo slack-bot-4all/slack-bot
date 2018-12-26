@@ -93,7 +93,7 @@ Remember to externalize the HTTP port you set in ```.env```, so that the Slack A
 | `list-lb` | *Command that brings ID list Environment Load Balancers Name* |
 | `info-service` | *Command that brings information about a service that will be specified* |
 | `upgrade-service` | *Command that will make an upgrade of a service, changing its image according to which it is passed as parameter* |
-| `list-service` | *Command that brings an ID list | Environment Services Name* |
+| `list-service` | *Command that brings an ID list \| Environment Services Name* |
 | `commands` | *Command responsible for displaying the commands that are available in BOT* |
 
 ## Contribution
