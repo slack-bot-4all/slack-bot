@@ -91,7 +91,7 @@ Remember to externalize the HTTP port you set in ```.env```, so that the Slack A
 | `restart-container` | *Command responsible for restarting specified container* |
 | `logs-container` | *Command responsible for returning the logs of the specified container until the action is triggered* |
 | `update-haproxy` | *Command that changes weights in Canary Deployment* |
-| `list-lb` | *Command that brings ID list | Environment Load Balancers Name* |
+| `list-lb` | *Command that brings ID list Environment Load Balancers Name* |
 | `info-service` | *Command that brings information about a service that will be specified* |
 | `upgrade-service` | *Command that will make an upgrade of a service, changing its image according to which it is passed as parameter* |
 | `list-service` | *Command that brings an ID list | Environment Services Name* |
@@ -121,7 +121,7 @@ var Commands = [] Command {
     {
         Cmd: "HowShouldNoSlack",
         Description: "Description of your command, explaining what it is for",
-        Usage: "As your command will be used (we recommend that you refer to the command as 'command', because when the command listing method is called, it will be replaced by the command itself)
+        Usage: "As your command will be used (we recommend that you refer to the command as 'command', because when the command listing method is called, it will be replaced by the command itself)"
         Lint: "If your command receives arguments or you want to leave any tips on the command, put it here",
     },
 }
