@@ -89,7 +89,10 @@ Remember to externalize the HTTP port you set in ```.env```, so that the Slack A
 | ------- | --------- |
 | `restart-container` | *Command responsible for restarting specified container* |
 | `logs-container` | *Command responsible for returning the logs of the specified container until the action is triggered* |
-| `update-haproxy` | *Command that changes weights in Canary Deployment* |
+| `update-canary` | *Command that changes weights in Canary Deployment* |
+| `enable-canary` | *Command that actives the Canary Deployment in a specified Load Balancer* |
+| `disable-canary` | *Command that disable the Canary Deployment in a specified Load Balancer* |
+| `info-canary` | *Command that returns a haproxy.cfg of a specified Load Balancer* |
 | `list-lb` | *Command that brings ID list Environment Load Balancers Name* |
 | `info-service` | *Command that brings information about a service that will be specified* |
 | `upgrade-service` | *Command that will make an upgrade of a service, changing its image according to which it is passed as parameter* |
