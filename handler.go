@@ -93,7 +93,9 @@ func actionInfoCanary(message slack.AttachmentActionCallback, w http.ResponseWri
 	value := message.Actions[0].SelectedOptions[0].Value
 	resp := rancherListener.GetHaproxyCfg(value)
 
-	msg := fmt.Sprintf("Arquivo haproxy.cfg do LoadBalancer `%s`.\n```%s```", value, resp)
+	lbConfig := gjson.Get(resp, "lbConfig.config").String()
+
+	msg := fmt.Sprintf("Arquivo haproxy.cfg do LoadBalancer `%s`.\n```%s```", value, lbConfig)
 
 	sendMessage(msg)
 
