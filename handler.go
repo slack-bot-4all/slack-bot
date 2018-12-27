@@ -106,7 +106,7 @@ func actionDisableCanary(message slack.AttachmentActionCallback, w http.Response
 	value := message.Actions[0].SelectedOptions[0].Value
 	resp := rancherListener.DisableCanary(value)
 
-	msg := fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* do LB `%s` desativado.\n```%s```", value, resp)
+	msg := fmt.Sprintf("*Canary Deployment* do LB `%s` desativado.\n```%s```", value, resp)
 
 	sendMessage(msg)
 
@@ -117,7 +117,7 @@ func actionEnableCanary(message slack.AttachmentActionCallback, w http.ResponseW
 	value := message.Actions[0].SelectedOptions[0].Value
 	resp := rancherListener.EnableCanary(value)
 
-	msg := fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* do LB `%s` ativado.\n```%s```", value, resp)
+	msg := fmt.Sprintf("*Canary Deployment* do LB `%s` ativado.\n```%s```", value, resp)
 
 	sendMessage(msg)
 
