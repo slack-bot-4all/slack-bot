@@ -63,12 +63,18 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch action.Name {
 	case actionSelect:
 		switch message.CallbackID {
-		case "restart-container":
+		case restartContainer:
 			actionRestartContainerFunction(message, w)
-		case "logs-container":
+		case logsContainer:
 			actionLogsContainerFunction(message, w)
-		case "info-container":
+		case getServiceInfo:
 			actionGetServiceInfo(message, w)
+		case canaryActivate:
+			actionEnableCanary(message, w)
+		case canaryDisable:
+			actionDisableCanary(message, w)
+		case canaryInfo:
+			actionInfoCanary(message, w)
 		default:
 			return
 		}
@@ -81,6 +87,39 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func actionInfoCanary(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+	value := message.Actions[0].SelectedOptions[0].Value
+	resp := rancherListener.GetHaproxyCfg(value)
+
+	msg := fmt.Sprintf("Arquivo haproxy.cfg do LoadBalancer `%s`.\n```%s```", value, resp)
+
+	sendMessage(msg)
+
+	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
+}
+
+func actionDisableCanary(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+	value := message.Actions[0].SelectedOptions[0].Value
+	resp := rancherListener.DisableCanary(value)
+
+	msg := fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* desativado.\n```%s```", resp)
+
+	sendMessage(msg)
+
+	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
+}
+
+func actionEnableCanary(message slack.AttachmentActionCallback, w http.ResponseWriter) {
+	value := message.Actions[0].SelectedOptions[0].Value
+	resp := rancherListener.EnableCanary(value)
+
+	msg := fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* ativado.\n```%s```", resp)
+
+	sendMessage(msg)
+
+	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 }
 
 func actionGetServiceInfo(message slack.AttachmentActionCallback, w http.ResponseWriter) {

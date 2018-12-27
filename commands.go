@@ -19,20 +19,20 @@ var Commands = []Command{
 	{
 		Cmd:         canaryActivate,
 		Description: "Comando que ativa o Canary Deployment",
-		Usage:       "@bot comando `id-lb`",
-		Lint:        "O comando tira todos os '#' que tem no arquivo haproxy.cfg | Em `id-lb` coloque o ID do Load Balancer a ser ativado o Canary",
+		Usage:       "@bot comando",
+		Lint:        "O comando tira todos os '#' que tem no arquivo haproxy.cfg | Aparecerá um select onde você selecionará o Load Balancer",
 	},
 	{
 		Cmd:         canaryDisable,
 		Description: "Comando que desativa o Canary Deployment",
 		Usage:       "@bot comando `id-lb`",
-		Lint:        "O comando adiciona um '#' no início de todas as linhas que tem no arquivo haproxy.cfg | Em `id-lb` coloque o ID do Load Balancer a ser desativado o Canary",
+		Lint:        "O comando adiciona um '#' no início de todas as linhas que tem no arquivo haproxy.cfg | Aparecerá um select onde você selecionará o Load Balancer",
 	},
 	{
 		Cmd:         canaryInfo,
 		Description: "Comando que trás o haproxy.cfg do Load Balancer informado, com propósito de trazer as informações do Canary Deployment",
 		Usage:       "@bot comando `id-lb`",
-		Lint:        "O comando busca o haproxy.cfg e apenas envia como mensagem | Em `id-lb` coloque o ID do Load Balancer a ser desativado o Canary",
+		Lint:        "O comando busca o haproxy.cfg e apenas envia como mensagem | Aparecerá um select onde você selecionará o Load Balancer",
 	},
 	{
 		Cmd:         haproxyList,

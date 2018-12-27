@@ -115,71 +115,93 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 // haproxy.cfg do Load Balancer, com o propósito do usuário
 // visualizar como está configurado o Canary
 func (s *SlackListener) SlackCanaryInfo(ev *slack.MessageEvent) {
-	args := strings.Split(ev.Msg.Text, " ")
-
-	if len(args) != 3 {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB", canaryInfo), false))
-		return
+	var attachment = slack.Attachment{
+		Text:       "Qual Load Balancer deseja buscar informações do Canary?",
+		Color:      "#0C648A",
+		CallbackID: canaryInfo,
+		Actions: []slack.AttachmentAction{
+			{
+				Name:    "select",
+				Type:    "select",
+				Options: getLbOptions(),
+			},
+			{
+				Name:  "cancel",
+				Text:  "Cancelar",
+				Type:  "button",
+				Style: "danger",
+			},
+		},
 	}
 
-	lb := args[2]
-
-	resp := rancherListener.GetHaproxyCfg(lb)
-
-	lbConfig := gjson.Get(resp, "lbConfig.config").String()
-
-	if lbConfig == "" {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Atenção! Verifique se o ID informado está correto, ou se o haproxy.cfg está vazio", false))
-		return
-	}
-
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("```%s```", lbConfig), false))
+	// Mandando a mensagem pro Slack com o Attachment feito acima
+	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
 // SlackCanaryEnable é a função que é responsável por descomentar todas
 // as linhas do haproxy.cfg do Load Balancer que for recebido como
 // parâmetro
 func (s *SlackListener) SlackCanaryEnable(ev *slack.MessageEvent) {
-	args := strings.Split(ev.Msg.Text, " ")
-
-	if len(args) != 3 {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB", canaryActivate), false))
-		return
+	var attachment = slack.Attachment{
+		Text:       "Qual Load Balancer deseja ativar o Canary?",
+		Color:      "#0C648A",
+		CallbackID: canaryActivate,
+		Actions: []slack.AttachmentAction{
+			{
+				Name:    "select",
+				Type:    "select",
+				Options: getLbOptions(),
+				Confirm: &slack.ConfirmationField{
+					Title:       "Tem certeza que deseja ativar o Canary deste Load Balancer? :man-gesturing-ok:",
+					Text:        "Verifique se este é mesmo o Load Balancer que você quer ativar o Canary",
+					OkText:      "Sim",
+					DismissText: "Não",
+				},
+			},
+			{
+				Name:  "cancel",
+				Text:  "Cancelar",
+				Type:  "button",
+				Style: "danger",
+			},
+		},
 	}
 
-	lb := args[2]
-
-	resp := rancherListener.EnableCanary(lb)
-
-	if resp == "error" {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto ou se o conteúdo do haproxy.cfg atual está em branco", false))
-		return
-	}
-
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* ativado.\n```%s```", resp), false))
+	// Mandando a mensagem pro Slack com o Attachment feito acima
+	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
 // SlackCanaryDisable é a função que é responsável por comentar todas
 // as linhas do haproxy.cfg do Load Balancer que for recebido como
 // parâmetro
 func (s *SlackListener) SlackCanaryDisable(ev *slack.MessageEvent) {
-	args := strings.Split(ev.Msg.Text, " ")
-
-	if len(args) != 3 {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB", canaryDisable), false))
-		return
+	var attachment = slack.Attachment{
+		Text:       "Qual Load Balancer deseja desativar o Canary?",
+		Color:      "#0C648A",
+		CallbackID: canaryDisable,
+		Actions: []slack.AttachmentAction{
+			{
+				Name:    "select",
+				Type:    "select",
+				Options: getLbOptions(),
+				Confirm: &slack.ConfirmationField{
+					Title:       "Tem certeza que deseja desativar o Canary deste Load Balancer? :scream:",
+					Text:        "Verifique se este é mesmo o Load Balancer que você quer desativar o Canary",
+					OkText:      "Sim",
+					DismissText: "Não",
+				},
+			},
+			{
+				Name:  "cancel",
+				Text:  "Cancelar",
+				Type:  "button",
+				Style: "danger",
+			},
+		},
 	}
 
-	lb := args[2]
-
-	resp := rancherListener.DisableCanary(lb)
-
-	if resp == "error" {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto ou se o conteúdo do haproxy.cfg atual está em branco", false))
-		return
-	}
-
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* desativado.\n```%s```", resp), false))
+	// Mandando a mensagem pro Slack com o Attachment feito acima
+	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
 // SlackServiceUpgrade é a função responsável por fazer o upgrade da
@@ -237,7 +259,7 @@ func (s *SlackListener) SlackServiceInfo(ev *slack.MessageEvent) {
 	var attachment = slack.Attachment{
 		Text:       "Qual serviço deseja obter informações? :sunglasses:",
 		Color:      "#0C648A",
-		CallbackID: "info-container",
+		CallbackID: getServiceInfo,
 		Actions: []slack.AttachmentAction{
 			{
 				Name:    "select",
@@ -357,7 +379,7 @@ func (s *SlackListener) SlackLogsContainer(ev *slack.MessageEvent) {
 	var attachment = slack.Attachment{
 		Text:       "Qual container deseja baixar os logs? :yum:",
 		Color:      "#0C648A",
-		CallbackID: "logs-container",
+		CallbackID: logsContainer,
 		Actions: []slack.AttachmentAction{
 			{
 				Name:    "select",
@@ -383,7 +405,7 @@ func (s *SlackListener) SlackRestartContainer(ev *slack.MessageEvent) {
 	var attachment = slack.Attachment{
 		Text:       "Qual container deseja reiniciar? :yum:",
 		Color:      "#0C648A",
-		CallbackID: "restart-container",
+		CallbackID: restartContainer,
 		Actions: []slack.AttachmentAction{
 			{
 				Name:    "select",
