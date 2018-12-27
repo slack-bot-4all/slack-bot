@@ -152,8 +152,8 @@ func (s *SlackListener) SlackCanaryEnable(ev *slack.MessageEvent) {
 				Type:    "select",
 				Options: getLbOptions(),
 				Confirm: &slack.ConfirmationField{
-					Title:       "Tem certeza que deseja ativar o Canary deste Load Balancer? :man-gesturing-ok:",
-					Text:        "Verifique se este é mesmo o Load Balancer que você quer ativar o Canary",
+					Title:       "Deseja mesmo ativar o Canary? :man-gesturing-ok:",
+					Text:        "Verifique se este é mesmo o Load Balancer que você quer ativar o Canary :smile:",
 					OkText:      "Sim",
 					DismissText: "Não",
 				},
@@ -185,8 +185,8 @@ func (s *SlackListener) SlackCanaryDisable(ev *slack.MessageEvent) {
 				Type:    "select",
 				Options: getLbOptions(),
 				Confirm: &slack.ConfirmationField{
-					Title:       "Tem certeza que deseja desativar o Canary deste Load Balancer? :scream:",
-					Text:        "Verifique se este é mesmo o Load Balancer que você quer desativar o Canary",
+					Title:       "Deseja mesmo desativar o Canary? :scream:",
+					Text:        "Verifique se este é mesmo o Load Balancer que você quer desativar o Canary :smile:",
 					OkText:      "Sim",
 					DismissText: "Não",
 				},
