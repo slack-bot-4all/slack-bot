@@ -13,7 +13,10 @@ import (
 )
 
 const (
-	haproxyUpdate    = "update-haproxy"
+	canaryUpdate     = "update-canary"
+	canaryDisable    = "disable-canary"
+	canaryActivate   = "enable-canary"
+	canaryInfo       = "info-canary"
 	haproxyList      = "list-lb"
 	logsContainer    = "logs-container"
 	restartContainer = "restart-container"
@@ -85,8 +88,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.SlackRestartContainer(ev)
 	} else if strings.HasPrefix(message, logsContainer) {
 		s.SlackLogsContainer(ev)
-	} else if strings.HasPrefix(message, haproxyUpdate) {
-		s.SlackUpdateLoadBalancer(ev)
+	} else if strings.HasPrefix(message, canaryUpdate) {
+		s.SlackUpdateCanary(ev)
 	} else if strings.HasPrefix(message, haproxyList) {
 		s.SlackListLoadBalancers(ev)
 	} else if strings.HasPrefix(message, getServiceInfo) {
@@ -95,11 +98,88 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.SlackServicesList(ev)
 	} else if strings.HasPrefix(message, upgradeService) {
 		s.SlackServiceUpgrade(ev)
+	} else if strings.HasPrefix(message, canaryDisable) {
+		s.SlackCanaryDisable(ev)
+	} else if strings.HasPrefix(message, canaryActivate) {
+		s.SlackCanaryEnable(ev)
+	} else if strings.HasPrefix(message, canaryInfo) {
+		s.SlackCanaryInfo(ev)
 	} else if strings.HasPrefix(message, comandos) {
 		s.SlackHelper(ev)
 	}
 
 	return nil
+}
+
+// SlackCanaryInfo é a função que é responsável por trazer o
+// haproxy.cfg do Load Balancer, com o propósito do usuário
+// visualizar como está configurado o Canary
+func (s *SlackListener) SlackCanaryInfo(ev *slack.MessageEvent) {
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) != 3 {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB", canaryInfo), false))
+		return
+	}
+
+	lb := args[2]
+
+	resp := rancherListener.GetHaproxyCfg(lb)
+
+	lbConfig := gjson.Get(resp, "lbConfig.config").String()
+
+	if lbConfig == "" {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Atenção! Verifique se o ID informado está correto, ou se o haproxy.cfg está vazio", false))
+		return
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("```%s```", lbConfig), false))
+}
+
+// SlackCanaryEnable é a função que é responsável por descomentar todas
+// as linhas do haproxy.cfg do Load Balancer que for recebido como
+// parâmetro
+func (s *SlackListener) SlackCanaryEnable(ev *slack.MessageEvent) {
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) != 3 {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB", canaryActivate), false))
+		return
+	}
+
+	lb := args[2]
+
+	resp := rancherListener.EnableCanary(lb)
+
+	if resp == "error" {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto ou se o conteúdo do haproxy.cfg atual está em branco", false))
+		return
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* ativado.\n```%s```", resp), false))
+}
+
+// SlackCanaryDisable é a função que é responsável por comentar todas
+// as linhas do haproxy.cfg do Load Balancer que for recebido como
+// parâmetro
+func (s *SlackListener) SlackCanaryDisable(ev *slack.MessageEvent) {
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) != 3 {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB", canaryDisable), false))
+		return
+	}
+
+	lb := args[2]
+
+	resp := rancherListener.DisableCanary(lb)
+
+	if resp == "error" {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto ou se o conteúdo do haproxy.cfg atual está em branco", false))
+		return
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* desativado.\n```%s```", resp), false))
 }
 
 // SlackServiceUpgrade é a função responsável por fazer o upgrade da
@@ -232,14 +312,14 @@ func (s *SlackListener) SlackListLoadBalancers(ev *slack.MessageEvent) {
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
-// SlackUpdateLoadBalancer é a função que busca a função em rancher.go para
+// SlackUpdateCanary é a função que busca a função em rancher.go para
 // fazer a alteração dos pesos do canary deployment no haproxy.cfg
 // dentro do Rancher
-func (s *SlackListener) SlackUpdateLoadBalancer(ev *slack.MessageEvent) {
+func (s *SlackListener) SlackUpdateCanary(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) != 5 {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB peso-nova-versao peso-antiga-versao", haproxyUpdate), false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB peso-nova-versao peso-antiga-versao", canaryUpdate), false))
 		return
 	}
 
@@ -254,8 +334,7 @@ func (s *SlackListener) SlackUpdateLoadBalancer(ev *slack.MessageEvent) {
 		return
 	}
 	//v := strconv.FormatBool(resp)
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText("Arquivo 'haproxy.cfg' alterado com sucesso!", false))
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("%s", resp), false))
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso!\n```%s```", resp), false))
 }
 
 // SlackSplunk é a função responsável por retornar informações sobre o Splunk

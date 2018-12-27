@@ -163,6 +163,60 @@ func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
 	conn.Dial(urlAndToken, "")
 }
 
+// DisableCanary é a função que envia a requisição para a API do
+// Rancher com a intenção de comentar todas as linhas do haproxy.cfg
+func (ranchListener *RancherListener) DisableCanary(ID string) string {
+	responseString := ranchListener.GetHaproxyCfg(ID)
+	actualLbConfig := gjson.Get(responseString, "lbConfig.config").String()
+
+	if actualLbConfig == "" {
+		return "error"
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
+
+	newLbConfig := ""
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.Contains(line, "#") {
+			newLbConfig += fmt.Sprintf("%s\n", line)
+		} else {
+			newLbConfig += fmt.Sprintf("#%s\n", line)
+		}
+	}
+
+	responseString, err := sjson.Set(responseString, "lbConfig.config", newLbConfig)
+	CheckErr("Erro ao setar novo Custom haproxy.cfg no JSON", err)
+
+	url := fmt.Sprintf("%s/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
+
+	return gjson.Get(resp, "lbConfig.config").String()
+}
+
+// EnableCanary é a função que retira os "#" de todo o haproxy.cfg
+// depois envia como PUT para a API do Rancher
+func (ranchListener *RancherListener) EnableCanary(ID string) string {
+	responseString := ranchListener.GetHaproxyCfg(ID)
+	actualLbConfig := gjson.Get(responseString, "lbConfig.config").String()
+
+	if actualLbConfig == "" {
+		return "error"
+	}
+
+	actualLbConfig = strings.Replace(actualLbConfig, "#", "", -1)
+
+	responseString, err := sjson.Set(responseString, "lbConfig.config", actualLbConfig)
+	CheckErr("Erro ao setar novo Custom haproxy.cfg no JSON", err)
+
+	url := fmt.Sprintf("%s/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
+
+	return gjson.Get(resp, "lbConfig.config").String()
+}
+
 // UpdateCustomHaproxyCfg Edita o lbConfig.config do LB
 func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPercent string, oldPercent string) string {
 	newPercentToInteger, _ := strconv.Atoi(newPercent)
@@ -172,6 +226,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 		return "error"
 	}
 
+	ranchListener.EnableCanary(ID)
 	responseString := ranchListener.GetHaproxyCfg(ID)
 	actualLbConfig := gjson.Get(responseString, "lbConfig.config").String()
 
