@@ -46,3 +46,14 @@ func WriteOnFile(path string, text string) {
 
 	defer f.Close()
 }
+
+// RemoveLastCharacter é a função que remove o último caracter de uma string
+func RemoveLastCharacter(s string) string {
+	sz := len(s)
+
+	if sz > 0 && s[sz-1] == '.' {
+		s = s[:sz-1]
+	}
+
+	return s
+}

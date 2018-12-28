@@ -69,8 +69,17 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		return nil
 	}
 
+	log.Println(ev.User)
+
+	var isReminder bool
+	if strings.Contains(ev.Msg.Text, fmt.Sprintf("Reminder: <@%s", s.botID)) {
+		ev.Msg.Text = strings.Replace(ev.Msg.Text, "Reminder: ", "", 1)
+		ev.Msg.Text = RemoveLastCharacter(ev.Msg.Text)
+		isReminder = true
+	}
+
 	// Parando a função caso a mensagem não traga o prefixo mencionando o BOT
-	if !strings.HasPrefix(ev.Msg.Text, fmt.Sprintf("<@%s> ", s.botID)) {
+	if !strings.HasPrefix(ev.Msg.Text, fmt.Sprintf("<@%s> ", s.botID)) && !isReminder {
 		return nil
 	}
 
@@ -84,27 +93,27 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
-	if strings.HasPrefix(message, restartContainer) {
+	if strings.Contains(message, restartContainer) {
 		s.SlackRestartContainer(ev)
-	} else if strings.HasPrefix(message, logsContainer) {
+	} else if strings.Contains(message, logsContainer) {
 		s.SlackLogsContainer(ev)
-	} else if strings.HasPrefix(message, canaryUpdate) {
+	} else if strings.Contains(message, canaryUpdate) {
 		s.SlackUpdateCanary(ev)
-	} else if strings.HasPrefix(message, haproxyList) {
+	} else if strings.Contains(message, haproxyList) {
 		s.SlackListLoadBalancers(ev)
-	} else if strings.HasPrefix(message, getServiceInfo) {
+	} else if strings.Contains(message, getServiceInfo) {
 		s.SlackServiceInfo(ev)
-	} else if strings.HasPrefix(message, listService) {
+	} else if strings.Contains(message, listService) {
 		s.SlackServicesList(ev)
-	} else if strings.HasPrefix(message, upgradeService) {
+	} else if strings.Contains(message, upgradeService) {
 		s.SlackServiceUpgrade(ev)
-	} else if strings.HasPrefix(message, canaryDisable) {
+	} else if strings.Contains(message, canaryDisable) {
 		s.SlackCanaryDisable(ev)
-	} else if strings.HasPrefix(message, canaryActivate) {
+	} else if strings.Contains(message, canaryActivate) {
 		s.SlackCanaryEnable(ev)
-	} else if strings.HasPrefix(message, canaryInfo) {
+	} else if strings.Contains(message, canaryInfo) {
 		s.SlackCanaryInfo(ev)
-	} else if strings.HasPrefix(message, comandos) {
+	} else if strings.Contains(message, comandos) {
 		s.SlackHelper(ev)
 	}
 
@@ -142,66 +151,98 @@ func (s *SlackListener) SlackCanaryInfo(ev *slack.MessageEvent) {
 // as linhas do haproxy.cfg do Load Balancer que for recebido como
 // parâmetro
 func (s *SlackListener) SlackCanaryEnable(ev *slack.MessageEvent) {
-	var attachment = slack.Attachment{
-		Text:       "Qual Load Balancer deseja ativar o Canary?",
-		Color:      "#0C648A",
-		CallbackID: canaryActivate,
-		Actions: []slack.AttachmentAction{
-			{
-				Name:    "select",
-				Type:    "select",
-				Options: getLbOptions(),
-				Confirm: &slack.ConfirmationField{
-					Title:       "Tem certeza disso?",
-					Text:        "Deseja mesmo ativar o Canary? :thinking_face:",
-					OkText:      "Sim",
-					DismissText: "Não",
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		lb := args[2]
+
+		resp := rancherListener.EnableCanary(lb)
+
+		if resp == "error" {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto ou se o conteúdo do haproxy.cfg atual está em branco", false))
+			return
+		}
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* ativado.\n```%s```", resp), false))
+	} else {
+		var attachment = slack.Attachment{
+			Text:       "Qual Load Balancer deseja ativar o Canary?",
+			Color:      "#0C648A",
+			CallbackID: canaryActivate,
+			Actions: []slack.AttachmentAction{
+				{
+					Name:    "select",
+					Type:    "select",
+					Options: getLbOptions(),
+					Confirm: &slack.ConfirmationField{
+						Title:       "Tem certeza disso?",
+						Text:        "Deseja mesmo ativar o Canary? :thinking_face:",
+						OkText:      "Sim",
+						DismissText: "Não",
+					},
+				},
+				{
+					Name:  "cancel",
+					Text:  "Cancelar",
+					Type:  "button",
+					Style: "danger",
 				},
 			},
-			{
-				Name:  "cancel",
-				Text:  "Cancelar",
-				Type:  "button",
-				Style: "danger",
-			},
-		},
+		}
+
+		// Mandando a mensagem pro Slack com o Attachment feito acima
+		s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 	}
 
-	// Mandando a mensagem pro Slack com o Attachment feito acima
-	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
 // SlackCanaryDisable é a função que é responsável por comentar todas
 // as linhas do haproxy.cfg do Load Balancer que for recebido como
 // parâmetro
 func (s *SlackListener) SlackCanaryDisable(ev *slack.MessageEvent) {
-	var attachment = slack.Attachment{
-		Text:       "Qual Load Balancer deseja desativar o Canary?",
-		Color:      "#0C648A",
-		CallbackID: canaryDisable,
-		Actions: []slack.AttachmentAction{
-			{
-				Name:    "select",
-				Type:    "select",
-				Options: getLbOptions(),
-				Confirm: &slack.ConfirmationField{
-					Title:       "Tem certeza disso?",
-					Text:        "Deseja mesmo desativar o Canary? :scream:",
-					OkText:      "Sim",
-					DismissText: "Não",
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		lb := args[2]
+
+		resp := rancherListener.DisableCanary(lb)
+
+		if resp == "error" {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto ou se o conteúdo do haproxy.cfg atual está em branco", false))
+			return
+		}
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* desativado.\n```%s```", resp), false))
+	} else {
+		var attachment = slack.Attachment{
+			Text:       "Qual Load Balancer deseja desativar o Canary?",
+			Color:      "#0C648A",
+			CallbackID: canaryDisable,
+			Actions: []slack.AttachmentAction{
+				{
+					Name:    "select",
+					Type:    "select",
+					Options: getLbOptions(),
+					Confirm: &slack.ConfirmationField{
+						Title:       "Tem certeza disso?",
+						Text:        "Deseja mesmo desativar o Canary? :scream:",
+						OkText:      "Sim",
+						DismissText: "Não",
+					},
+				},
+				{
+					Name:  "cancel",
+					Text:  "Cancelar",
+					Type:  "button",
+					Style: "danger",
 				},
 			},
-			{
-				Name:  "cancel",
-				Text:  "Cancelar",
-				Type:  "button",
-				Style: "danger",
-			},
-		},
+		}
+
+		// Mandando a mensagem pro Slack com o Attachment feito acima
+		s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 	}
 
-	// Mandando a mensagem pro Slack com o Attachment feito acima
-	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 }
 
 // SlackServiceUpgrade é a função responsável por fazer o upgrade da
