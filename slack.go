@@ -93,27 +93,27 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
-	if strings.Contains(message, restartContainer) {
+	if strings.HasPrefix(message, restartContainer) {
 		s.SlackRestartContainer(ev)
-	} else if strings.Contains(message, logsContainer) {
+	} else if strings.HasPrefix(message, logsContainer) {
 		s.SlackLogsContainer(ev)
-	} else if strings.Contains(message, canaryUpdate) {
+	} else if strings.HasPrefix(message, canaryUpdate) {
 		s.SlackUpdateCanary(ev)
-	} else if strings.Contains(message, haproxyList) {
+	} else if strings.HasPrefix(message, haproxyList) {
 		s.SlackListLoadBalancers(ev)
-	} else if strings.Contains(message, getServiceInfo) {
+	} else if strings.HasPrefix(message, getServiceInfo) {
 		s.SlackServiceInfo(ev)
-	} else if strings.Contains(message, listService) {
+	} else if strings.HasPrefix(message, listService) {
 		s.SlackServicesList(ev)
-	} else if strings.Contains(message, upgradeService) {
+	} else if strings.HasPrefix(message, upgradeService) {
 		s.SlackServiceUpgrade(ev)
-	} else if strings.Contains(message, canaryDisable) {
+	} else if strings.HasPrefix(message, canaryDisable) {
 		s.SlackCanaryDisable(ev)
-	} else if strings.Contains(message, canaryActivate) {
+	} else if strings.HasPrefix(message, canaryActivate) {
 		s.SlackCanaryEnable(ev)
-	} else if strings.Contains(message, canaryInfo) {
+	} else if strings.HasPrefix(message, canaryInfo) {
 		s.SlackCanaryInfo(ev)
-	} else if strings.Contains(message, comandos) {
+	} else if strings.HasPrefix(message, comandos) {
 		s.SlackHelper(ev)
 	}
 
@@ -285,7 +285,7 @@ func (s *SlackListener) SlackServicesList(ev *slack.MessageEvent) {
 
 	data := gjson.Get(resp, "data")
 	data.ForEach(func(key, value gjson.Result) bool {
-		msg += fmt.Sprintf("*ID:* `%s` | *Nome:* `%s`\n", value.Get("id").String(), value.Get("name").String())
+		msg += fmt.Sprintf("`%s | %s`\n", value.Get("id").String(), value.Get("name").String())
 		return true
 	})
 
