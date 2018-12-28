@@ -3,9 +3,9 @@
 - [How to Works?](#How-to-Works)
 - [How to Use?](#How-to-use)
 - [Available Commands](#Available-Commands)
+- [Scheduling Commands](#scheduling-commands)
 - [Contribution](#Contribution)
 - [Adding New Commands](#Adding-New-Commands)
-- [Scheduling Commands](#scheduling-commands)
 
 The ***SLfR*** (Slack-bot for Rancher), is an application responsible for task automation in Rancher 1.6, using the Rancher and Slack API.
 
