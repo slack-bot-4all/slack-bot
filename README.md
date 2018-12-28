@@ -5,6 +5,7 @@
 - [Available Commands](#Available-Commands)
 - [Contribution](#Contribution)
 - [Adding New Commands](#Adding-New-Commands)
+- [Scheduling Commands](#scheduling-commands)
 
 The ***SLfR*** (Slack-bot for Rancher), is an application responsible for task automation in Rancher 1.6, using the Rancher and Slack API.
 
@@ -98,6 +99,16 @@ Remember to externalize the HTTP port you set in ```.env```, so that the Slack A
 | `upgrade-service` | *Command that will make an upgrade of a service, changing its image according to which it is passed as parameter* |
 | `list-service` | *Command that brings an ID list \| Environment Services Name* |
 | `commands` | *Command responsible for displaying the commands that are available in BOT* |
+
+## Scheduling Commands
+Our BOT is adapted to receive a "reminder" messages, that way, the BOT processes the message and take the command. A simple usage of [Slack Reminder](https://get.slack.help/hc/en-us/articles/208423427-Definir-um-lembrete) is:
+```
+/remind channel-to-send-a-message "My Command" time
+```
+A simple example of usage is:
+```
+/remind #general "@jeremias update-canary 1s30 90 10" at 11:00pm
+```
 
 ## Contribution
 We are fully open to contri- butions. This is an **Open Source** project, so whatever you have to add in our project, just add and do the pull request.
