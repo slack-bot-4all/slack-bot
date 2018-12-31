@@ -13,7 +13,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// interactionHandler handles interactive message response.
 type interactionHandler struct {
 	slackClient       *slack.Client
 	verificationToken string
@@ -185,8 +184,6 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 }
 
-// responseMessage response to the original slackbutton enabled message.
-// It removes button and replace it with message which indicate how bot will work
 func responseMessage(w http.ResponseWriter, original slack.Message, title, value string) {
 	original.Attachments[0].Actions = []slack.AttachmentAction{} // empty buttons
 	original.Attachments[0].Fields = []slack.AttachmentField{

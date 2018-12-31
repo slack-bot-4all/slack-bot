@@ -34,17 +34,6 @@ type Container struct {
 	name      string
 }
 
-// LbConfig é uma estrutura que é usada para enviar dados para conf Haproxy
-type LbConfig struct {
-	Config string `json:"config"`
-}
-
-// LoadBalancerServices é uma estrutura que é usada para a construção do JSON de requisição
-// quando se vai fazer o edit/upgrade de LB's
-type LoadBalancerServices struct {
-	LbConfig *LbConfig `json:"lbConfig"`
-}
-
 // LoadBalancer é a estrutura que tem como objetivo representar um LoadBalancer do Rancher
 // de forma um pouco mais resumida (é usado na função GetLoadBalancers())
 type LoadBalancer struct {
@@ -132,13 +121,12 @@ func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 	f, err := os.Create(fmt.Sprintf("/tmp/logs-container-%d%d%d%02d%02d%02d.log", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second()))
 	CheckErr("Erro na criação do arquivo de logs", err)
 
-	SocketConnectionLogsContainer(urlAndToken, f.Name())
+	socketConnectionLogsContainer(urlAndToken, f.Name())
 
 	return f.Name()
 }
 
-// SocketConnectionLogsContainer é uma função que retornará uma conexão com o ws da URL passada como parâmetro
-func SocketConnectionLogsContainer(urlAndToken string, fileName string) {
+func socketConnectionLogsContainer(urlAndToken string, fileName string) {
 	conn := &evtwebsocket.Conn{
 		OnConnected: func(w *evtwebsocket.Conn) {
 			log.Println("[INFO] Conectado no WebSocket!")

@@ -87,43 +87,40 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	message := strings.Split(strings.TrimSpace(ev.Msg.Text), " ")[1]
 
 	if strings.Contains(ev.Msg.Text, "ajuda") {
-		s.SlackCommandHelper(ev, message)
+		s.slackCommandHelper(ev, message)
 		return nil
 	}
 
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
 	if strings.HasPrefix(message, restartContainer) {
-		s.SlackRestartContainer(ev)
+		s.slackRestartContainer(ev)
 	} else if strings.HasPrefix(message, logsContainer) {
-		s.SlackLogsContainer(ev)
+		s.slackLogsContainer(ev)
 	} else if strings.HasPrefix(message, canaryUpdate) {
-		s.SlackUpdateCanary(ev)
+		s.slackUpdateCanary(ev)
 	} else if strings.HasPrefix(message, haproxyList) {
-		s.SlackListLoadBalancers(ev)
+		s.slackListLoadBalancers(ev)
 	} else if strings.HasPrefix(message, getServiceInfo) {
-		s.SlackServiceInfo(ev)
+		s.slackServiceInfo(ev)
 	} else if strings.HasPrefix(message, listService) {
-		s.SlackServicesList(ev)
+		s.slackServicesList(ev)
 	} else if strings.HasPrefix(message, upgradeService) {
-		s.SlackServiceUpgrade(ev)
+		s.slackServiceUpgrade(ev)
 	} else if strings.HasPrefix(message, canaryDisable) {
-		s.SlackCanaryDisable(ev)
+		s.slackCanaryDisable(ev)
 	} else if strings.HasPrefix(message, canaryActivate) {
-		s.SlackCanaryEnable(ev)
+		s.slackCanaryEnable(ev)
 	} else if strings.HasPrefix(message, canaryInfo) {
-		s.SlackCanaryInfo(ev)
+		s.slackCanaryInfo(ev)
 	} else if strings.HasPrefix(message, comandos) {
-		s.SlackHelper(ev)
+		s.slackHelper(ev)
 	}
 
 	return nil
 }
 
-// SlackCanaryInfo é a função que é responsável por trazer o
-// haproxy.cfg do Load Balancer, com o propósito do usuário
-// visualizar como está configurado o Canary
-func (s *SlackListener) SlackCanaryInfo(ev *slack.MessageEvent) {
+func (s *SlackListener) slackCanaryInfo(ev *slack.MessageEvent) {
 	s.createAndSendAttachment(
 		ev,
 		"Qual Load Balancer deseja buscar informações do Canary?",
@@ -133,10 +130,7 @@ func (s *SlackListener) SlackCanaryInfo(ev *slack.MessageEvent) {
 	)
 }
 
-// SlackCanaryEnable é a função que é responsável por descomentar todas
-// as linhas do haproxy.cfg do Load Balancer que for recebido como
-// parâmetro
-func (s *SlackListener) SlackCanaryEnable(ev *slack.MessageEvent) {
+func (s *SlackListener) slackCanaryEnable(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) == 3 {
@@ -167,10 +161,7 @@ func (s *SlackListener) SlackCanaryEnable(ev *slack.MessageEvent) {
 
 }
 
-// SlackCanaryDisable é a função que é responsável por comentar todas
-// as linhas do haproxy.cfg do Load Balancer que for recebido como
-// parâmetro
-func (s *SlackListener) SlackCanaryDisable(ev *slack.MessageEvent) {
+func (s *SlackListener) slackCanaryDisable(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) == 3 {
@@ -201,9 +192,7 @@ func (s *SlackListener) SlackCanaryDisable(ev *slack.MessageEvent) {
 
 }
 
-// SlackServiceUpgrade é a função responsável por fazer o upgrade da
-// imagem de um container que será recebido como parâmetro
-func (s *SlackListener) SlackServiceUpgrade(ev *slack.MessageEvent) {
+func (s *SlackListener) slackServiceUpgrade(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) != 4 {
@@ -232,9 +221,7 @@ func (s *SlackListener) SlackServiceUpgrade(ev *slack.MessageEvent) {
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
-// SlackServicesList é a função que enviará uma mensagem no geral listando todos os
-// serviços que existem no Environment
-func (s *SlackListener) SlackServicesList(ev *slack.MessageEvent) {
+func (s *SlackListener) slackServicesList(ev *slack.MessageEvent) {
 	resp := rancherListener.ListServices()
 
 	msg := "*Lista de serviços:* \n\n"
@@ -248,11 +235,7 @@ func (s *SlackListener) SlackServicesList(ev *slack.MessageEvent) {
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
-// SlackServiceInfo é a função que envia um Attachment para o Slack com
-// a lista de serviços que tem no Environment, após isso, o usuário
-// selecionará um container, que com isso, o BOT retornará informações sobre
-// esse serviço
-func (s *SlackListener) SlackServiceInfo(ev *slack.MessageEvent) {
+func (s *SlackListener) slackServiceInfo(ev *slack.MessageEvent) {
 	s.createAndSendAttachment(
 		ev,
 		"Qual serviço deseja obter informações? :sunglasses:",
@@ -262,9 +245,7 @@ func (s *SlackListener) SlackServiceInfo(ev *slack.MessageEvent) {
 	)
 }
 
-// SlackCommandHelper é a função que retorna melhores informações
-// sobre um comando específico
-func (s *SlackListener) SlackCommandHelper(ev *slack.MessageEvent, message string) {
+func (s *SlackListener) slackCommandHelper(ev *slack.MessageEvent, message string) {
 	var msg string
 
 	for _, cmd := range Commands {
@@ -281,9 +262,7 @@ func (s *SlackListener) SlackCommandHelper(ev *slack.MessageEvent, message strin
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
-// SlackHelper é a função que retorna os comandos possíveis juntamente
-// com breves resumos e formas de uso das mesmas
-func (s *SlackListener) SlackHelper(ev *slack.MessageEvent) {
+func (s *SlackListener) slackHelper(ev *slack.MessageEvent) {
 	msg := "*Comandos:* "
 
 	for _, cmd := range Commands {
@@ -295,9 +274,7 @@ func (s *SlackListener) SlackHelper(ev *slack.MessageEvent) {
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
-// SlackListLoadBalancers é a função responsável por retornar para o usuário a lista
-// de LB's
-func (s *SlackListener) SlackListLoadBalancers(ev *slack.MessageEvent) {
+func (s *SlackListener) slackListLoadBalancers(ev *slack.MessageEvent) {
 	loadBalancers := rancherListener.GetLoadBalancers()
 
 	var lines []string
@@ -317,10 +294,7 @@ func (s *SlackListener) SlackListLoadBalancers(ev *slack.MessageEvent) {
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
-// SlackUpdateCanary é a função que busca a função em rancher.go para
-// fazer a alteração dos pesos do canary deployment no haproxy.cfg
-// dentro do Rancher
-func (s *SlackListener) SlackUpdateCanary(ev *slack.MessageEvent) {
+func (s *SlackListener) slackUpdateCanary(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) != 5 {
@@ -342,10 +316,7 @@ func (s *SlackListener) SlackUpdateCanary(ev *slack.MessageEvent) {
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso!\n```%s```", resp), false))
 }
 
-// SlackLogsContainer é a função responsável por mandar o attachment
-// com todos os containers, para o usuário selecionar um para recuperar
-// os logs
-func (s *SlackListener) SlackLogsContainer(ev *slack.MessageEvent) {
+func (s *SlackListener) slackLogsContainer(ev *slack.MessageEvent) {
 	s.createAndSendAttachment(
 		ev,
 		"Qual container deseja baixar os logs? :yum:",
@@ -355,8 +326,7 @@ func (s *SlackListener) SlackLogsContainer(ev *slack.MessageEvent) {
 	)
 }
 
-// SlackRestartContainer Função responsável por fazer o reinício de um container dentro do Rancher
-func (s *SlackListener) SlackRestartContainer(ev *slack.MessageEvent) {
+func (s *SlackListener) slackRestartContainer(ev *slack.MessageEvent) {
 	s.createAndSendAttachment(
 		ev,
 		"Qual container deseja reiniciar? :yum:",
