@@ -69,8 +69,6 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		return nil
 	}
 
-	log.Println(ev.User)
-
 	var isReminder bool
 	if strings.Contains(ev.Msg.Text, fmt.Sprintf("Reminder: <@%s", s.botID)) {
 		ev.Msg.Text = strings.Replace(ev.Msg.Text, "Reminder: ", "", 1)
