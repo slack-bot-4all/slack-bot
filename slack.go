@@ -124,27 +124,13 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 // haproxy.cfg do Load Balancer, com o propósito do usuário
 // visualizar como está configurado o Canary
 func (s *SlackListener) SlackCanaryInfo(ev *slack.MessageEvent) {
-	var attachment = slack.Attachment{
-		Text:       "Qual Load Balancer deseja buscar informações do Canary?",
-		Color:      "#0C648A",
-		CallbackID: canaryInfo,
-		Actions: []slack.AttachmentAction{
-			{
-				Name:    "select",
-				Type:    "select",
-				Options: getLbOptions(),
-			},
-			{
-				Name:  "cancel",
-				Text:  "Cancelar",
-				Type:  "button",
-				Style: "danger",
-			},
-		},
-	}
-
-	// Mandando a mensagem pro Slack com o Attachment feito acima
-	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+	s.createAndSendAttachment(
+		ev,
+		"Qual Load Balancer deseja buscar informações do Canary?",
+		canaryInfo,
+		getLbOptions(),
+		nil,
+	)
 }
 
 // SlackCanaryEnable é a função que é responsável por descomentar todas
@@ -165,33 +151,18 @@ func (s *SlackListener) SlackCanaryEnable(ev *slack.MessageEvent) {
 
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* ativado.\n```%s```", resp), false))
 	} else {
-		var attachment = slack.Attachment{
-			Text:       "Qual Load Balancer deseja ativar o Canary?",
-			Color:      "#0C648A",
-			CallbackID: canaryActivate,
-			Actions: []slack.AttachmentAction{
-				{
-					Name:    "select",
-					Type:    "select",
-					Options: getLbOptions(),
-					Confirm: &slack.ConfirmationField{
-						Title:       "Tem certeza disso?",
-						Text:        "Deseja mesmo ativar o Canary? :thinking_face:",
-						OkText:      "Sim",
-						DismissText: "Não",
-					},
-				},
-				{
-					Name:  "cancel",
-					Text:  "Cancelar",
-					Type:  "button",
-					Style: "danger",
-				},
+		s.createAndSendAttachment(
+			ev,
+			"Qual Load Balancer deseja ativar o Canary?",
+			canaryActivate,
+			getLbOptions(),
+			&slack.ConfirmationField{
+				Title:       "Tem certeza disso?",
+				Text:        "Deseja mesmo ativar o Canary? :thinking_face:",
+				OkText:      "Sim",
+				DismissText: "Não",
 			},
-		}
-
-		// Mandando a mensagem pro Slack com o Attachment feito acima
-		s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+		)
 	}
 
 }
@@ -214,33 +185,18 @@ func (s *SlackListener) SlackCanaryDisable(ev *slack.MessageEvent) {
 
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* desativado.\n```%s```", resp), false))
 	} else {
-		var attachment = slack.Attachment{
-			Text:       "Qual Load Balancer deseja desativar o Canary?",
-			Color:      "#0C648A",
-			CallbackID: canaryDisable,
-			Actions: []slack.AttachmentAction{
-				{
-					Name:    "select",
-					Type:    "select",
-					Options: getLbOptions(),
-					Confirm: &slack.ConfirmationField{
-						Title:       "Tem certeza disso?",
-						Text:        "Deseja mesmo desativar o Canary? :scream:",
-						OkText:      "Sim",
-						DismissText: "Não",
-					},
-				},
-				{
-					Name:  "cancel",
-					Text:  "Cancelar",
-					Type:  "button",
-					Style: "danger",
-				},
+		s.createAndSendAttachment(
+			ev,
+			"Qual Load Balancer deseja desativar o Canary?",
+			canaryDisable,
+			getLbOptions(),
+			&slack.ConfirmationField{
+				Title:       "Tem certeza disso?",
+				Text:        "Deseja mesmo desativar o Canary? :scream:",
+				OkText:      "Sim",
+				DismissText: "Não",
 			},
-		}
-
-		// Mandando a mensagem pro Slack com o Attachment feito acima
-		s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+		)
 	}
 
 }
@@ -297,27 +253,13 @@ func (s *SlackListener) SlackServicesList(ev *slack.MessageEvent) {
 // selecionará um container, que com isso, o BOT retornará informações sobre
 // esse serviço
 func (s *SlackListener) SlackServiceInfo(ev *slack.MessageEvent) {
-	var attachment = slack.Attachment{
-		Text:       "Qual serviço deseja obter informações? :sunglasses:",
-		Color:      "#0C648A",
-		CallbackID: getServiceInfo,
-		Actions: []slack.AttachmentAction{
-			{
-				Name:    "select",
-				Type:    "select",
-				Options: getServices(),
-			},
-			{
-				Name:  "cancel",
-				Text:  "Cancelar",
-				Type:  "button",
-				Style: "danger",
-			},
-		},
-	}
-
-	// Mandando a mensagem pro Slack com o Attachment feito acima
-	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+	s.createAndSendAttachment(
+		ev,
+		"Qual serviço deseja obter informações? :sunglasses:",
+		getServiceInfo,
+		getServices(),
+		nil,
+	)
 }
 
 // SlackCommandHelper é a função que retorna melhores informações
@@ -400,64 +342,41 @@ func (s *SlackListener) SlackUpdateCanary(ev *slack.MessageEvent) {
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso!\n```%s```", resp), false))
 }
 
-// SlackSplunk é a função responsável por retornar informações sobre o Splunk
-func (s *SlackListener) SlackSplunk(ev *slack.MessageEvent) {
-	splunkListener := &SplunkListener{
-		Username: SplunkUsername,
-		Password: SplunkPassword,
-		BaseURL:  SplunkBaseURL,
-	}
-
-	key := splunkListener.ConnectSplunk()
-
-	fmt.Println(key)
-}
-
 // SlackLogsContainer é a função responsável por mandar o attachment
 // com todos os containers, para o usuário selecionar um para recuperar
 // os logs
 func (s *SlackListener) SlackLogsContainer(ev *slack.MessageEvent) {
-	var attachment = slack.Attachment{
-		Text:       "Qual container deseja baixar os logs? :yum:",
-		Color:      "#0C648A",
-		CallbackID: logsContainer,
-		Actions: []slack.AttachmentAction{
-			{
-				Name:    "select",
-				Type:    "select",
-				Options: getContainers(),
-			},
-			{
-				Name:  "cancel",
-				Text:  "Cancelar",
-				Type:  "button",
-				Style: "danger",
-			},
-		},
-	}
-
-	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+	s.createAndSendAttachment(
+		ev,
+		"Qual container deseja baixar os logs? :yum:",
+		logsContainer,
+		getContainers(),
+		nil,
+	)
 }
 
 // SlackRestartContainer Função responsável por fazer o reinício de um container dentro do Rancher
 func (s *SlackListener) SlackRestartContainer(ev *slack.MessageEvent) {
-	// Criando attachment e setando options como a lista de opcoes que foi
-	// iterada acima
-	var attachment = slack.Attachment{
-		Text:       "Qual container deseja reiniciar? :yum:",
+	s.createAndSendAttachment(
+		ev,
+		"Qual container deseja reiniciar? :yum:",
+		restartContainer,
+		getContainers(),
+		nil,
+	)
+}
+
+func (s *SlackListener) createAndSendAttachment(ev *slack.MessageEvent, text string, callbackID string, options []slack.AttachmentActionOption, confirmation *slack.ConfirmationField) {
+	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(slack.Attachment{
+		Text:       text,
 		Color:      "#0C648A",
-		CallbackID: restartContainer,
+		CallbackID: callbackID,
 		Actions: []slack.AttachmentAction{
 			{
 				Name:    "select",
 				Type:    "select",
-				Options: getContainers(),
-				Confirm: &slack.ConfirmationField{
-					Title:       "Deseja reiniciar este container?",
-					Text:        "Verifique se realmente é este container que você deseja reiniciar",
-					OkText:      "Sim",
-					DismissText: "Não",
-				},
+				Options: options,
+				Confirm: confirmation,
 			},
 			{
 				Name:  "cancel",
@@ -466,10 +385,7 @@ func (s *SlackListener) SlackRestartContainer(ev *slack.MessageEvent) {
 				Style: "danger",
 			},
 		},
-	}
-
-	// Mandando a mensagem pro Slack com o Attachment feito acima
-	s.client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+	}))
 }
 
 func getContainers() []slack.AttachmentActionOption {
