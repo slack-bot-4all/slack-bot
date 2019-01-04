@@ -142,11 +142,11 @@ func main() {
 	go slackListener.StartBot(rancherListener)
 
 	router := mux.NewRouter()
-	env = append(env, Env{RancherAccessKey: RancherAccessKey, RancherSecretKey: RancherSecretKey,
+	env = Env{RancherAccessKey: RancherAccessKey, RancherSecretKey: RancherSecretKey,
 		RancherBaseURL: RancherBaseURL, RancherProjectID: RancherProjectID, SlackBotToken: SlackBotToken,
 		SlackBotID: SlackBotID, SlackBotChannel: SlackBotChannel,
 		SlackBotVerificationToken: SlackBotVerificationToken, HTTPPort: Port, SplunkUsername: SplunkUsername,
-		SplunkPassword: SplunkPassword, SplunkBaseURL: SplunkBaseURL})
+		SplunkPassword: SplunkPassword, SplunkBaseURL: SplunkBaseURL}
 
 	router.HandleFunc("/env", GetEnvs).Methods("GET")
 	router.Handle("/interaction", interactionHandler{

@@ -24,9 +24,14 @@ type Env struct {
 	SplunkBaseURL             string `json:"SPLUNK_BASE_URL"`
 }
 
-var env []Env
+var env Env
 
 // GetEnvs mostra todas envs
 func GetEnvs(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	json.NewEncoder(w).Encode(env)
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
