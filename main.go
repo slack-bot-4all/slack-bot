@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/nlopes/slack"
 )
 
@@ -140,14 +141,21 @@ func main() {
 
 	go slackListener.StartBot(rancherListener)
 
-	http.Handle("/interaction", interactionHandler{
+	router := mux.NewRouter()
+	env = append(env, Env{RancherAccessKey: RancherAccessKey, RancherSecretKey: RancherSecretKey,
+		RancherBaseURL: RancherBaseURL, RancherProjectID: RancherProjectID, SlackBotToken: SlackBotToken,
+		SlackBotID: SlackBotID, SlackBotChannel: SlackBotChannel,
+		SlackBotVerificationToken: SlackBotVerificationToken, HTTPPort: Port, SplunkUsername: SplunkUsername,
+		SplunkPassword: SplunkPassword, SplunkBaseURL: SplunkBaseURL})
+
+	router.HandleFunc("/env", GetEnvs).Methods("GET")
+	router.Handle("/interaction", interactionHandler{
 		verificationToken: SlackBotVerificationToken,
 	})
 
 	log.Printf("[INFO] Servidor rodando na porta: %s", Port)
-	if err := http.ListenAndServe(":"+Port, nil); err != nil {
+	if err := http.ListenAndServe(":"+Port, router); err != nil {
 		log.Printf("[ERROR] %s", err)
 		os.Exit(1)
 	}
-
 }
