@@ -122,6 +122,10 @@ func main() {
 
 	log.SetOutput(mw)
 
+	log.Println("[INFO] Sincronizando comandos...")
+	CreateCommands()
+	log.Println("[INFO] Comandos sincronizados com sucesso!")
+
 	client := slack.New(
 		SlackBotToken,
 		slack.OptionDebug(true),
@@ -146,6 +150,7 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/env", GetEnvs).Methods("GET")
+	router.HandleFunc("/commands", GetCommands).Methods("GET")
 	router.Handle("/interaction", interactionHandler{
 		verificationToken: SlackBotVerificationToken,
 	})
