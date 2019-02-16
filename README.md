@@ -130,12 +130,11 @@ else if strings.HasPrefix(message, yourCommand) {
 After that, add your command to `commands.go`, inside the **slice** called `Commands`. *Note: This step is optional, if not put, your command will not appear in the command list, however, it will work*.
 
 ```golang
-var Commands = [] Command {
-    {
-        Cmd: "HowShouldNoSlack",
-        Description: "Description of your command, explaining what it is for",
-        Usage: "As your command will be used (we recommend that you refer to the command as 'command', because when the command listing method is called, it will be replaced by the command itself)"
-        Lint: "If your command receives arguments or you want to leave any tips on the command, put it here",
-    },
-}
+Commands = append(Commands, Command{
+		Cmd:         yourCommand,
+		Description: "Description of your command, explaining what it is for",
+		Usage:       "As your command will be used (we recommend that you refer to the command as 'command', because when the command listing method is called, it will be replaced by the command itself)",
+		Lint:        "If your command receives arguments or you want to leave any tips on the command, put it here",
+		IsActive:    true , // Keep true. Its a possible feature.
+            })
 ```
