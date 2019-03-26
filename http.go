@@ -71,3 +71,13 @@ func (rancherListener *RancherListener) RancherAuthAdd(request *http.Request) {
 		request.SetBasicAuth(rancherListener.accessKey, rancherListener.secretKey)
 	}
 }
+
+func createHTTPClient() *http.Client {
+    transp := &http.Transport{
+        TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+    }
+
+    client := &http.Client{Transport: transp}
+
+    return client
+}

@@ -10,6 +10,10 @@ import (
 	"os"
 )
 
+type Kanye struct{
+	Quote string `json:"quote"`
+} 
+
 // CheckErr : Função feita para checar os erros
 func CheckErr(message string, err error) {
 	if err != nil {

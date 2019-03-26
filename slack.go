@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"net/http"
+	"encoding/json"
+	"io/ioutil"
 
 	"github.com/nlopes/slack"
 	"github.com/tidwall/gjson"
@@ -23,7 +26,7 @@ const (
 	getServiceInfo   = "info-service"
 	upgradeService   = "upgrade-service"
 	listService      = "list-service"
-	comandos         = "comandos"
+	commands         = "commands"
 )
 
 // SlackListener é a struct que armazena dados do BOT
@@ -76,6 +79,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		isReminder = true
 	}
 
+	
 	// Parando a função caso a mensagem não traga o prefixo mencionando o BOT
 	if !strings.HasPrefix(ev.Msg.Text, fmt.Sprintf("<@%s> ", s.botID)) && !isReminder {
 		return nil
@@ -83,7 +87,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Tirando a menção ao BOT da mensagem e guardando em uma variável
 	message := strings.Split(strings.TrimSpace(ev.Msg.Text), " ")[1]
-
+	log.Println(message)
 	if strings.Contains(ev.Msg.Text, "ajuda") {
 		s.slackCommandHelper(ev, message)
 		return nil
@@ -111,8 +115,10 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.slackCanaryEnable(ev)
 	} else if strings.HasPrefix(message, canaryInfo) {
 		s.slackCanaryInfo(ev)
-	} else if strings.HasPrefix(message, comandos) {
+	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
+	} else {
+		s.interactiveMessage(ev)
 	}
 
 	return nil
@@ -332,6 +338,24 @@ func (s *SlackListener) slackRestartContainer(ev *slack.MessageEvent) {
 		getContainers(),
 		nil,
 	)
+}
+
+
+func (s *SlackListener) interactiveMessage(ev *slack.MessageEvent){
+	client := createHTTPClient()
+
+	req, err := http.NewRequest("GET", "https://api.kanye.rest", nil)
+	CheckErr("", err)
+
+	resp, err := client.Do(req)
+	CheckErr("", err)
+
+	body,_ := ioutil.ReadAll(resp.Body)
+
+	var kanye Kanye
+	_ = json.Unmarshal(body, &kanye)
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Amiguinho, o que você quis dizer? Não entendi, então toma aqui uma msg pra deixar seu dia melhor:\n\n\"%s\"", kanye.Quote), true))
 }
 
 func (s *SlackListener) createAndSendAttachment(ev *slack.MessageEvent, text string, callbackID string, options []slack.AttachmentActionOption, confirmation *slack.ConfirmationField) {
