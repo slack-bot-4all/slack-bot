@@ -24,7 +24,7 @@ func (s *SplunkListener) ConnectSplunk() splunk.SessionKey {
 	}
 
 	key, err := conn.Login()
-	CheckErr("Não foi possível fazer login no Splunk", err)
+	CheckErr("Not is possible login on Splunk", err)
 
 	return key
 }

@@ -48,7 +48,7 @@ func (ranchListener *RancherListener) RestartContainer(containerID string) {
 
 	idValue := gjson.Get(resp, "id").String()
 
-	log.Println("[INFO] Container restartado! ID:", idValue)
+	log.Println("[INFO] Container restarted! ID:", idValue)
 }
 
 // ListContainers é uma função que retornará uma lista de todos os containers de um projeto/environment
@@ -77,14 +77,14 @@ func (ranchListener *RancherListener) UpgradeService(ID string, newImage string)
 	originalServiceCfg := ranchListener.GetService(ID)
 
 	originalServiceCfg, err := sjson.Set(originalServiceCfg, "launchConfig.imageUuid", newImage)
-	CheckErr("Erro ao setar valor de nova variável no JSON do serviço", err)
+	CheckErr("Error to set value of new variable of service JSON", err)
 
 	launchConfigOri := gjson.Get(originalServiceCfg, "launchConfig").String()
 
 	json.Unmarshal([]byte(launchConfigOri), &data)
 
 	jsonRequest, err = sjson.Set(jsonRequest, "inServiceStrategy.launchConfig", data)
-	CheckErr("Erro ao setar valor de nova variável no JSON do serviço", err)
+	CheckErr("Error to set value of new variable of service JSON", err)
 
 	url := fmt.Sprintf("%s/%s/services/%s?action=upgrade", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, jsonRequest)
@@ -119,7 +119,7 @@ func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 	t := time.Now()
 
 	f, err := os.Create(fmt.Sprintf("/tmp/logs-container-%d%d%d%02d%02d%02d.log", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second()))
-	CheckErr("Erro na criação do arquivo de logs", err)
+	CheckErr("Logs file creation error", err)
 
 	socketConnectionLogsContainer(urlAndToken, f.Name())
 
@@ -129,7 +129,7 @@ func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 func socketConnectionLogsContainer(urlAndToken string, fileName string) {
 	conn := &evtwebsocket.Conn{
 		OnConnected: func(w *evtwebsocket.Conn) {
-			log.Println("[INFO] Conectado no WebSocket!")
+			log.Println("[INFO] Connectec on WebSocket!")
 		},
 
 		OnMessage: func(msg []byte, w *evtwebsocket.Conn) {
@@ -176,7 +176,7 @@ func (ranchListener *RancherListener) DisableCanary(ID string) string {
 	}
 
 	responseString, err := sjson.Set(responseString, "lbConfig.config", newLbConfig)
-	CheckErr("Erro ao setar novo Custom haproxy.cfg no JSON", err)
+	CheckErr("Error to set new Custom haproxy.cfg on JSON", err)
 
 	url := fmt.Sprintf("%s/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
@@ -197,7 +197,7 @@ func (ranchListener *RancherListener) EnableCanary(ID string) string {
 	actualLbConfig = strings.Replace(actualLbConfig, "#", "", -1)
 
 	responseString, err := sjson.Set(responseString, "lbConfig.config", actualLbConfig)
-	CheckErr("Erro ao setar novo Custom haproxy.cfg no JSON", err)
+	CheckErr("Error to set new Custom haproxy.cfg on JSON", err)
 
 	url := fmt.Sprintf("%s/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
@@ -244,7 +244,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	newLbConfig = strings.Replace(newLbConfig, "weightpeso02", "weight", 1)
 
 	responseString, err := sjson.Set(responseString, "lbConfig.config", newLbConfig)
-	CheckErr("Erro ao setar novo Custom haproxy.cfg no JSON", err)
+	CheckErr("Error to set new Custom haproxy.cfg on JSON", err)
 
 	url := fmt.Sprintf("%s/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)

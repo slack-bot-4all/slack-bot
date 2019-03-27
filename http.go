@@ -52,14 +52,14 @@ func (rancherListener *RancherListener) HTTPSendRancherRequest(url string, metho
 	case "PUT":
 		req, err = http.NewRequest(method, url, payload)
 	default:
-		log.Println("[INFO] Não possível criar requisição, método não encontrado.")
+		log.Println("[INFO] Not possible create request, method not found.")
 	}
-	CheckErr("[ERROR] Erro ao criar requisição", err)
+	CheckErr("[ERROR] Error to create request", err)
 
 	rancherListener.RancherAuthAdd(req)
 
 	resp, err := client.Do(req)
-	CheckErr("[ERROR] Erro ao enviar requisição", err)
+	CheckErr("[ERROR] Error to send request", err)
 
 	return ConvertResponseToString(resp.Body)
 }
@@ -73,11 +73,11 @@ func (rancherListener *RancherListener) RancherAuthAdd(request *http.Request) {
 }
 
 func createHTTPClient() *http.Client {
-    transp := &http.Transport{
-        TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-    }
+	transp := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
 
-    client := &http.Client{Transport: transp}
+	client := &http.Client{Transport: transp}
 
-    return client
+	return client
 }

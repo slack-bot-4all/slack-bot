@@ -78,11 +78,11 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case actionCancel:
-		title := fmt.Sprintf(":x: @%s cancelou a requisição", message.User.Name)
+		title := fmt.Sprintf(":x: @%s canceled the request", message.User.Name)
 		responseMessage(w, message.OriginalMessage, title, "")
 		getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
 	default:
-		log.Printf("[ERROR] Ação inválida: %s", action.Name)
+		log.Printf("[ERROR] Invalid action: %s", action.Name)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -94,7 +94,7 @@ func actionInfoCanary(message slack.AttachmentActionCallback, w http.ResponseWri
 
 	lbConfig := gjson.Get(resp, "lbConfig.config").String()
 
-	msg := fmt.Sprintf("Arquivo haproxy.cfg do LoadBalancer `%s`.\n```%s```", value, lbConfig)
+	msg := fmt.Sprintf("haproxy.cfg file of Load Balancer `%s`.\n```%s```", value, lbConfig)
 
 	sendMessage(msg)
 
@@ -105,7 +105,7 @@ func actionDisableCanary(message slack.AttachmentActionCallback, w http.Response
 	value := message.Actions[0].SelectedOptions[0].Value
 	resp := rancherListener.DisableCanary(value)
 
-	msg := fmt.Sprintf("*Canary Deployment* do LB `%s` desativado.\n```%s```", value, resp)
+	msg := fmt.Sprintf("*Canary Deployment* of LB `%s` disabled.\n```%s```", value, resp)
 
 	sendMessage(msg)
 
@@ -116,7 +116,7 @@ func actionEnableCanary(message slack.AttachmentActionCallback, w http.ResponseW
 	value := message.Actions[0].SelectedOptions[0].Value
 	resp := rancherListener.EnableCanary(value)
 
-	msg := fmt.Sprintf("*Canary Deployment* do LB `%s` ativado.\n```%s```", value, resp)
+	msg := fmt.Sprintf("*Canary Deployment* of LB `%s` enabled.\n```%s```", value, resp)
 
 	sendMessage(msg)
 
@@ -133,7 +133,7 @@ func actionGetServiceInfo(message slack.AttachmentActionCallback, w http.Respons
 	stateService := gjson.Get(resp, "state").String()
 	createdDateService := gjson.Get(resp, "created").String()
 
-	msg := fmt.Sprintf("*ID:* `%s`\n*Nome:* `%s`\n*Imagem:* `%s`\n*Status:* `%s`\n*Data de Criação:* `%s`", idService, nameService, imageService, stateService, createdDateService)
+	msg := fmt.Sprintf("*ID:* `%s`\n*Name:* `%s`\n*Image:* `%s`\n*Status:* `%s`\n*Created at:* `%s`", idService, nameService, imageService, stateService, createdDateService)
 
 	sendMessage(msg)
 
@@ -144,7 +144,7 @@ func actionRestartContainerFunction(message slack.AttachmentActionCallback, w ht
 	value := message.Actions[0].SelectedOptions[0].Value
 	rancherListener.RestartContainer(value)
 
-	title := fmt.Sprintf("Container de ID %s restartado por @%s com sucesso! :sunglasses:\n\n", value, message.User.Name)
+	title := fmt.Sprintf("Container %s restarted by @%s successfuly! :sunglasses:\n\n", value, message.User.Name)
 	sendMessage(title)
 
 	getAPIConnection().client.DeleteMessage(message.Channel.ID, message.MessageTs)
@@ -165,13 +165,13 @@ func actionLogsContainerFunction(message slack.AttachmentActionCallback, w http.
 			api.channelID,
 		},
 	})
-	CheckErr("Erro ao fazer upload de arquivo de logs de container", err)
+	CheckErr("Upload logs container error", err)
 
 	originalMessage := message.OriginalMessage
 	originalMessage.Files = []slack.File{
 		{
 			ID:       file.ID,
-			Title:    fmt.Sprintf("Logs do container: %s", value),
+			Title:    fmt.Sprintf("Logs of container: %s", value),
 			Filetype: "text",
 		},
 	}

@@ -4,12 +4,12 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"strings"
-	"net/http"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
+	"strings"
 
 	"github.com/nlopes/slack"
 	"github.com/tidwall/gjson"
@@ -79,7 +79,6 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		isReminder = true
 	}
 
-	
 	// Parando a função caso a mensagem não traga o prefixo mencionando o BOT
 	if !strings.HasPrefix(ev.Msg.Text, fmt.Sprintf("<@%s> ", s.botID)) && !isReminder {
 		return nil
@@ -87,8 +86,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Tirando a menção ao BOT da mensagem e guardando em uma variável
 	message := strings.Split(strings.TrimSpace(ev.Msg.Text), " ")[1]
-	log.Println(message)
-	if strings.Contains(ev.Msg.Text, "ajuda") {
+
+	if strings.Contains(ev.Msg.Text, "help") {
 		s.slackCommandHelper(ev, message)
 		return nil
 	}
@@ -127,7 +126,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 func (s *SlackListener) slackCanaryInfo(ev *slack.MessageEvent) {
 	s.createAndSendAttachment(
 		ev,
-		"Qual Load Balancer deseja buscar informações do Canary?",
+		"Which Load Balancer you needs to search info of Canary?",
 		canaryInfo,
 		getLbOptions(),
 		nil,
@@ -143,22 +142,22 @@ func (s *SlackListener) slackCanaryEnable(ev *slack.MessageEvent) {
 		resp := rancherListener.EnableCanary(lb)
 
 		if resp == "error" {
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto ou se o conteúdo do haproxy.cfg atual está em branco", false))
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on update haproxy.cfg, check if ID param is right or the body of haproxy.cfg is empty", false))
 			return
 		}
 
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* ativado.\n```%s```", resp), false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("File 'haproxy.cfg' updated success! *Canary Deployment* enabled.\n```%s```", resp), false))
 	} else {
 		s.createAndSendAttachment(
 			ev,
-			"Qual Load Balancer deseja ativar o Canary?",
+			"Which Load Balancer you need enable the Canary?",
 			canaryActivate,
 			getLbOptions(),
 			&slack.ConfirmationField{
-				Title:       "Tem certeza disso?",
-				Text:        "Deseja mesmo ativar o Canary? :thinking_face:",
-				OkText:      "Sim",
-				DismissText: "Não",
+				Title:       "Are you sure?",
+				Text:        "You sure to enable Canary? :thinking_face:",
+				OkText:      "Yes",
+				DismissText: "No",
 			},
 		)
 	}
@@ -174,22 +173,22 @@ func (s *SlackListener) slackCanaryDisable(ev *slack.MessageEvent) {
 		resp := rancherListener.DisableCanary(lb)
 
 		if resp == "error" {
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto ou se o conteúdo do haproxy.cfg atual está em branco", false))
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on update haproxy.cfg, check if ID param is right or the body of haproxy.cfg is empty", false))
 			return
 		}
 
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso! *Canary Deployment* desativado.\n```%s```", resp), false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("File 'haproxy.cfg' updated success! *Canary Deployment* disabled.\n```%s```", resp), false))
 	} else {
 		s.createAndSendAttachment(
 			ev,
-			"Qual Load Balancer deseja desativar o Canary?",
+			"Which Load Balancer you need disable the Canary?",
 			canaryDisable,
 			getLbOptions(),
 			&slack.ConfirmationField{
-				Title:       "Tem certeza disso?",
-				Text:        "Deseja mesmo desativar o Canary? :scream:",
-				OkText:      "Sim",
-				DismissText: "Não",
+				Title:       "Are you sure?",
+				Text:        "You sure to disable Canary? :scream:",
+				OkText:      "Yes",
+				DismissText: "No",
 			},
 		)
 	}
@@ -200,7 +199,7 @@ func (s *SlackListener) slackServiceUpgrade(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) != 4 {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-serviço nova-imagem", upgradeService), false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Command call error, correct syntax: @name-of-bot %s service-id new-image", upgradeService), false))
 		return
 	}
 
@@ -208,27 +207,27 @@ func (s *SlackListener) slackServiceUpgrade(ev *slack.MessageEvent) {
 	newServiceImage := args[3]
 
 	if !strings.HasPrefix(newServiceImage, "docker:") {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText("O nome da imagem deve começar com 'docker:'. Ex.: docker:ubuntu:14.04", false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Image name needs to start with 'docker:'. Ex.: docker:ubuntu:14.04", false))
 		return
 	}
 
 	resp := rancherListener.UpgradeService(serviceID, newServiceImage)
 
 	if resp == "" {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro no upgrade do serviço. Você pode verificar:\n*- Se o ID do serviço que foi passado realmente existe*\n*- Se o serviço já não está passando por um processo de Upgrade*", false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Service upgrade error. Check:\n*- If service ID really exists*\n*- If service is not in upgrading state*", false))
 		return
 	}
 
-	msg := fmt.Sprintf("Serviço atualizado com sucesso! A nova imagem do serviço `%s` é `%s`", serviceID, resp)
+	msg := fmt.Sprintf("Service updated successfuly! New image of the service `%s` is `%s`", serviceID, resp)
 
-	log.Printf("[INFO] Serviço %s atualizado pelo usuário %s\n", serviceID, ev.Msg.User)
+	log.Printf("[INFO] Service %s updated by %s\n", serviceID, ev.Msg.User)
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
 func (s *SlackListener) slackServicesList(ev *slack.MessageEvent) {
 	resp := rancherListener.ListServices()
 
-	msg := "*Lista de serviços:* \n\n"
+	msg := "*Service List:* \n\n"
 
 	data := gjson.Get(resp, "data")
 	data.ForEach(func(key, value gjson.Result) bool {
@@ -242,7 +241,7 @@ func (s *SlackListener) slackServicesList(ev *slack.MessageEvent) {
 func (s *SlackListener) slackServiceInfo(ev *slack.MessageEvent) {
 	s.createAndSendAttachment(
 		ev,
-		"Qual serviço deseja obter informações? :sunglasses:",
+		"Which service you need informations? :sunglasses:",
 		getServiceInfo,
 		getServices(),
 		nil,
@@ -254,26 +253,26 @@ func (s *SlackListener) slackCommandHelper(ev *slack.MessageEvent, message strin
 
 	for _, cmd := range Commands {
 		if cmd.Cmd == message {
-			cmd.Usage = strings.Replace(cmd.Usage, "comando", cmd.Cmd, 1)
-			msg = fmt.Sprintf("*Comando:* `%s`\n*Descrição:* _%s_\n*Uso:* _%s_\n*Dica:* _%s_", cmd.Cmd, cmd.Description, cmd.Usage, cmd.Lint)
+			cmd.Usage = strings.Replace(cmd.Usage, "command", cmd.Cmd, 1)
+			msg = fmt.Sprintf("*Command:* `%s`\n*Description:* _%s_\n*Usage:* _%s_\n*Lint:* _%s_", cmd.Cmd, cmd.Description, cmd.Usage, cmd.Lint)
 		}
 	}
 
 	if msg == "" {
-		msg = "Comando não encontrado."
+		msg = "Command not found."
 	}
 
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
 func (s *SlackListener) slackHelper(ev *slack.MessageEvent) {
-	msg := "*Comandos:* "
+	msg := "*Commands:* "
 
 	for _, cmd := range Commands {
 		msg += fmt.Sprintf("`%s` ", cmd.Cmd)
 	}
 
-	msg += "\n\n_*Obs.:* Caso queira informações mais detalhadas sobre um comando, você pode chamar este comando seguido de *ajuda*._\n_*Ex.:* @bot comando ajuda_"
+	msg += "\n\n_*PS.:* If you need detailed informations for a command, you can call command followed by *help*._\n_*Ex.:* @bot command help_"
 
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
@@ -289,7 +288,7 @@ func (s *SlackListener) slackListLoadBalancers(ev *slack.MessageEvent) {
 		lines = append(lines, line)
 	}
 
-	msg := "*Lista de Load Balancers:*"
+	msg := "*Load Balancers list:*"
 
 	for _, line := range lines {
 		msg += fmt.Sprintf("\n%s", line)
@@ -302,7 +301,7 @@ func (s *SlackListener) slackUpdateCanary(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) != 5 {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Erro na chamada do comando, sintaxe correta: @nome-do-bot %s id-do-LB peso-nova-versao peso-antiga-versao", canaryUpdate), false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Command call error, correct syntax: @name-of-bot %s LB-id new-version-weight old-version-weight", canaryUpdate), false))
 		return
 	}
 
@@ -313,17 +312,17 @@ func (s *SlackListener) slackUpdateCanary(ev *slack.MessageEvent) {
 	resp := rancherListener.UpdateCustomHaproxyCfg(lb, newVersionPercent, oldVersionPercent)
 
 	if resp == "error" {
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao fazer update no haproxy.cfg, verifique se o ID passado está correto, se o conteúdo do haproxy.cfg atual está em branco ou se os pesos passados não somam 100", false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on update haproxy.cfg, check if ID param is right, the body of haproxy.cfg is empty or if weights not sum 100", false))
 		return
 	}
 	//v := strconv.FormatBool(resp)
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Arquivo 'haproxy.cfg' alterado com sucesso!\n```%s```", resp), false))
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("File 'haproxy.cfg' updated successfuly!\n```%s```", resp), false))
 }
 
 func (s *SlackListener) slackLogsContainer(ev *slack.MessageEvent) {
 	s.createAndSendAttachment(
 		ev,
-		"Qual container deseja baixar os logs? :yum:",
+		"Which container you need to download logs? :yum:",
 		logsContainer,
 		getContainers(),
 		nil,
@@ -333,15 +332,14 @@ func (s *SlackListener) slackLogsContainer(ev *slack.MessageEvent) {
 func (s *SlackListener) slackRestartContainer(ev *slack.MessageEvent) {
 	s.createAndSendAttachment(
 		ev,
-		"Qual container deseja reiniciar? :yum:",
+		"Which container you need restart? :yum:",
 		restartContainer,
 		getContainers(),
 		nil,
 	)
 }
 
-
-func (s *SlackListener) interactiveMessage(ev *slack.MessageEvent){
+func (s *SlackListener) interactiveMessage(ev *slack.MessageEvent) {
 	client := createHTTPClient()
 
 	req, err := http.NewRequest("GET", "https://api.kanye.rest", nil)
@@ -350,12 +348,12 @@ func (s *SlackListener) interactiveMessage(ev *slack.MessageEvent){
 	resp, err := client.Do(req)
 	CheckErr("", err)
 
-	body,_ := ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 
 	var kanye Kanye
 	_ = json.Unmarshal(body, &kanye)
 
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Amiguinho, o que você quis dizer? Não entendi, então toma aqui uma msg pra deixar seu dia melhor:\n\n\"%s\"", kanye.Quote), true))
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Friend, what did you mean? I do not understand, so here's a message to make your day better:\n\n\"%s\"", kanye.Quote), true))
 }
 
 func (s *SlackListener) createAndSendAttachment(ev *slack.MessageEvent, text string, callbackID string, options []slack.AttachmentActionOption, confirmation *slack.ConfirmationField) {
