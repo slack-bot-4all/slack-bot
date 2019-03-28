@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -224,24 +225,41 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 
 	scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
 
-	var firstWeight string
-	var secondWeight string
 	var newLbConfig string
+	var lines []string
 
 	for scanner.Scan() {
-		if line := strings.Split(scanner.Text(), "weight "); len(line) >= 2 {
-			if firstWeight == "" {
-				firstWeight = line[1]
-				newLbConfig = strings.Replace(actualLbConfig, fmt.Sprintf("weight %s", firstWeight), fmt.Sprintf("weightpeso01 %s", newPercent), 1)
-			} else {
-				secondWeight = line[1]
-				newLbConfig = strings.Replace(newLbConfig, fmt.Sprintf("weight %s", secondWeight), fmt.Sprintf("weightpeso02 %s", oldPercent), 1)
+		lines = strings.Split(scanner.Text(), "\n")
+		if strings.HasPrefix(lines[0], "server") {
+			var n string
+			var o string
+			new := regexp.MustCompile(".+new.+(\\d{2})")
+			old := regexp.MustCompile(".+old.+(\\d{2})")
+			l := new.FindStringSubmatch(scanner.Text())
+			z := old.FindStringSubmatch(scanner.Text())
+			if len(l) >= 2 {
+				n = strings.Replace(scanner.Text(), fmt.Sprintf("weight %s", l[1]), fmt.Sprintf("weight %s", newPercent), 1)
+				if newLbConfig == "" {
+					newLbConfig = strings.Replace(actualLbConfig, scanner.Text(), n, 1)
+				} else {
+					newLbConfig = strings.Replace(newLbConfig, scanner.Text(), n, 1)
+				}
 			}
+
+			if len(z) >= 2 {
+				o = strings.Replace(scanner.Text(), fmt.Sprintf("weight %s", z[1]), fmt.Sprintf("weight %s", oldPercent), 1)
+				if newLbConfig == "" {
+					newLbConfig = strings.Replace(actualLbConfig, scanner.Text(), o, 1)
+				} else {
+					newLbConfig = strings.Replace(newLbConfig, scanner.Text(), o, 1)
+				}
+			}
+
 		}
+
 	}
 
-	newLbConfig = strings.Replace(newLbConfig, "weightpeso01", "weight", 1)
-	newLbConfig = strings.Replace(newLbConfig, "weightpeso02", "weight", 1)
+	fmt.Println("DEBUG [newLbConfig] =>", newLbConfig)
 
 	responseString, err := sjson.Set(responseString, "lbConfig.config", newLbConfig)
 	CheckErr("Error to set new Custom haproxy.cfg on JSON", err)
@@ -250,6 +268,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
 
 	return gjson.Get(resp, "lbConfig.config").String()
+
 }
 
 // GetHaproxyCfg Busca a Custom haproxy.cfg do LoadBalancer enviado como parâmetro
