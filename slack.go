@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/nlopes/slack"
 	"github.com/tidwall/gjson"
@@ -52,7 +53,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.ConnectedEvent:
-			s.client.PostMessage(s.channelID, slack.MsgOptionText("Fala mano, to aqui! :nerd_face:", false))
+			s.client.PostMessage(s.channelID, slack.MsgOptionText("Hey brow, I'm here! Cry your tears :sob:", false))
 			log.Println("[INFO] BOT iniciado com sucesso!")
 		case *slack.MessageEvent:
 			s.handleMessageEvent(ev)
@@ -124,13 +125,24 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 }
 
 func (s *SlackListener) slackCanaryInfo(ev *slack.MessageEvent) {
-	s.createAndSendAttachment(
-		ev,
-		"Which Load Balancer you needs to search info of Canary?",
-		canaryInfo,
-		getLbOptions(),
-		nil,
-	)
+
+	args := strings.Split(ev.Msg.Text, " ")
+	if len(args) == 3 {
+		lbid := args[2]
+
+		resp := rancherListener.GetHaproxyCfg(lbid)
+		lbConfig := gjson.Get(resp, "lbConfig.config").String()
+
+		msg := fmt.Sprintf("haproxy.cfg file of Load Balancer `%s`.\n```%s```",
+			lbid, lbConfig)
+
+		if resp == "error" {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error", false))
+			return
+		}
+		fmt.Println(msg)
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("ConfigHaprox:\n\n\"%s\"", msg), true))
+	}
 }
 
 func (s *SlackListener) slackCanaryEnable(ev *slack.MessageEvent) {
@@ -272,7 +284,7 @@ func (s *SlackListener) slackHelper(ev *slack.MessageEvent) {
 		msg += fmt.Sprintf("`%s` ", cmd.Cmd)
 	}
 
-	msg += "\n\n_*PS.:* If you need detailed informations for a command, you can call command followed by *help*._\n_*Ex.:* @bot command help_"
+	msg += "\n\n_*PS.:* If you need detailed informations for a command, you can call command followed by *help*._\n_*Ex.:* @jeremias command help_"
 
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
@@ -320,13 +332,47 @@ func (s *SlackListener) slackUpdateCanary(ev *slack.MessageEvent) {
 }
 
 func (s *SlackListener) slackLogsContainer(ev *slack.MessageEvent) {
-	s.createAndSendAttachment(
-		ev,
-		"Which container you need to download logs? :yum:",
-		logsContainer,
-		getContainers(),
-		nil,
-	)
+
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		container := args[2]
+
+		fileName := rancherListener.LogsContainer(container)
+
+		time.Sleep(2 * time.Second)
+
+		api := getAPIConnection()
+
+		_, err := api.client.UploadFile(slack.FileUploadParameters{
+			File:     fileName,
+			Filename: fileName,
+			Filetype: "text",
+			Channels: []string{
+				api.channelID,
+			},
+		})
+		CheckErr("Upload logs container error", err)
+
+		// FileSlack := []slack.File{
+		// 	{
+		// 		ID:       file.ID,
+		// 		Title:    fmt.Sprintf("Logs of container: %s", container),
+		// 		Filetype: "text",
+		// 	},
+		// }
+		// s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on update haproxy.cfg, check if ID param is right or the body of haproxy.cfg is empty", true))
+	} else {
+		s.createAndSendAttachment(
+			ev,
+			"Which container you need to download logs? :yum:",
+			logsContainer,
+			getContainers(),
+			nil,
+		)
+
+	}
+
 }
 
 func (s *SlackListener) slackRestartContainer(ev *slack.MessageEvent) {
@@ -340,20 +386,26 @@ func (s *SlackListener) slackRestartContainer(ev *slack.MessageEvent) {
 }
 
 func (s *SlackListener) interactiveMessage(ev *slack.MessageEvent) {
-	client := createHTTPClient()
+	args := strings.Split(ev.Msg.Text, " ")
 
-	req, err := http.NewRequest("GET", "https://api.kanye.rest", nil)
-	CheckErr("", err)
+	if len(args) >= 0 {
+		fmt.Println(args)
+		client := createHTTPClient()
 
-	resp, err := client.Do(req)
-	CheckErr("", err)
+		req, err := http.NewRequest("GET", "https://api.kanye.rest", nil)
+		CheckErr("", err)
 
-	body, _ := ioutil.ReadAll(resp.Body)
+		resp, err := client.Do(req)
+		CheckErr("", err)
 
-	var kanye Kanye
-	_ = json.Unmarshal(body, &kanye)
+		body, _ := ioutil.ReadAll(resp.Body)
 
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Friend, what did you mean? I do not understand, so here's a message to make your day better:\n\n\"%s\"", kanye.Quote), true))
+		var kanye Kanye
+		_ = json.Unmarshal(body, &kanye)
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Friend, what did you mean? I do not understand, so here's a message to make your day better:\n\n\"%s\"", kanye.Quote), true))
+	}
+
 }
 
 func (s *SlackListener) createAndSendAttachment(ev *slack.MessageEvent, text string, callbackID string, options []slack.AttachmentActionOption, confirmation *slack.ConfirmationField) {
