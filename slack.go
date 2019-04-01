@@ -353,15 +353,6 @@ func (s *SlackListener) slackLogsContainer(ev *slack.MessageEvent) {
 			},
 		})
 		CheckErr("Upload logs container error", err)
-
-		// FileSlack := []slack.File{
-		// 	{
-		// 		ID:       file.ID,
-		// 		Title:    fmt.Sprintf("Logs of container: %s", container),
-		// 		Filetype: "text",
-		// 	},
-		// }
-		// s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on update haproxy.cfg, check if ID param is right or the body of haproxy.cfg is empty", true))
 	} else {
 		s.createAndSendAttachment(
 			ev,
