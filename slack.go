@@ -83,12 +83,19 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	// Parando a função caso a mensagem não traga o prefixo mencionando o BOT
-	if !strings.HasPrefix(ev.Msg.Text, fmt.Sprintf("<@%s> ", s.botID)) && !isReminder {
+	if !strings.HasPrefix(ev.Msg.Text, fmt.Sprintf("<@%s>", s.botID)) && !isReminder {
 		return nil
 	}
 
-	// Tirando a menção ao BOT da mensagem e guardando em uma variável
-	message := strings.Split(strings.TrimSpace(ev.Msg.Text), " ")[1]
+	var message string
+	messageSlice := strings.Split(ev.Msg.Text, " ") // Tirando a menção ao BOT da mensagem e guardando em uma variável
+	if len(messageSlice) <= 1 {
+		if ev.Msg.Text != fmt.Sprintf("<@%s>", s.botID) {
+			return nil
+		}
+	} else {
+		message = messageSlice[1]
+	}
 
 	if strings.Contains(ev.Msg.Text, "help") {
 		s.slackCommandHelper(ev, message)
@@ -443,7 +450,7 @@ func (s *SlackListener) interactiveMessage(ev *slack.MessageEvent) {
 		var kanye Kanye
 		_ = json.Unmarshal(body, &kanye)
 
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Friend, what did you mean? I do not understand, so here's a message to make your day better:\n\n\"%s\"", kanye.Quote), true))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Little Friend, what did you mean? I do not understand, use @jeremias help or @jeremias commands!\n\n So here's a message to make your day better:\n\n\"%s\"", kanye.Quote), true))
 	}
 
 }
