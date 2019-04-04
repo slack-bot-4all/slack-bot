@@ -17,7 +17,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         canaryUpdate,
 		Description: "Command that changes weights in Canary Deployment",
-		Usage:       "@bot command `lb-id` `new-version-weight` `old-version-weight`",
+		Usage:       "@jeremias command `lb-id` `new-version-weight` `old-version-weight`",
 		Lint:        "`lb-id` LoadBalancer ID to be edited | `new-version-weight` Weight to new version on canary | `old-version-weight` Weight to old version on canary",
 		IsActive:    true,
 	})
@@ -25,7 +25,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         canaryActivate,
 		Description: "Command that actives the Canary Deployment in a specified Load Balancer",
-		Usage:       "@bot command `*lb-id*`",
+		Usage:       "@jeremias command `*lb-id*`",
 		Lint:        "The command removes all '#' of haproxy.cfg file | Will appear a select to you select a Load Balancer to enable canary",
 		IsActive:    true,
 	})
@@ -33,7 +33,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         canaryDisable,
 		Description: "Command that disable the Canary Deployment in a specified Load Balancer",
-		Usage:       "@bot command `*lb-id*`",
+		Usage:       "@jeremias command `*lb-id*`",
 		Lint:        "The command add '#' on start of all lines of the haproxy.cfg file | Will appear a select to you select a Load Balancer to enable canary",
 		IsActive:    true,
 	})
@@ -41,7 +41,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         canaryInfo,
 		Description: "Command that returns a haproxy.cfg of a specified Load Balancer",
-		Usage:       "@bot command",
+		Usage:       "@jeremias command",
 		Lint:        "The command get haproxy.cfg body and send for message | Will appear a select to you select a Load Balancer to get info",
 		IsActive:    true,
 	})
@@ -49,7 +49,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         haproxyList,
 		Description: "Command that brings ID list Environment Load Balancers Name",
-		Usage:       "@bot command",
+		Usage:       "@jeremias command",
 		Lint:        "",
 		IsActive:    true,
 	})
@@ -57,7 +57,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         logsContainer,
 		Description: "Command responsible for returning the logs of the specified container until the action is triggered",
-		Usage:       "@bot command",
+		Usage:       "@jeremias command",
 		Lint:        "Will appear a select, where be selected the container to get logs",
 		IsActive:    true,
 	})
@@ -65,7 +65,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         restartContainer,
 		Description: "Command responsible for restarting specified container",
-		Usage:       "@bot command",
+		Usage:       "@jeremias command",
 		Lint:        "Will appear a select, where be selected the container to be restarted",
 		IsActive:    true,
 	})
@@ -73,7 +73,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         getServiceInfo,
 		Description: "Command that brings information about a service that will be specified",
-		Usage:       "@bot command",
+		Usage:       "@jeremias command",
 		Lint:        "Will appear a select, where be selected the container",
 		IsActive:    true,
 	})
@@ -81,7 +81,7 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         upgradeService,
 		Description: "Command that will make an upgrade of a service, changing its image according to which it is passed as parameter",
-		Usage:       "@bot command `service-id` `new-image`",
+		Usage:       "@jeremias command `service-id` `new-image`",
 		Lint:        "In `service-id` put the id of the service which you need to send a new image and in `new-image` put the name of image to be sended",
 		IsActive:    true,
 	})
@@ -89,15 +89,31 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         listService,
 		Description: "Command that brings an ID list | Environment Services Name",
-		Usage:       "@bot command",
+		Usage:       "@jeremias command",
 		Lint:        "The returned format is something like ID: service-id | Name: service-name",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
+		Cmd:         startService,
+		Description: "Command to activate services",
+		Usage:       "@jeremias command `service-id`",
+		Lint:        "",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
+		Cmd:         stopService,
+		Description: "Command to deactivate a services",
+		Usage:       "@jeremias command `service-id`",
+		Lint:        "",
 		IsActive:    true,
 	})
 
 	Commands = append(Commands, Command{
 		Cmd:         commands,
 		Description: "Command responsible for displaying the commands that are available in BOT",
-		Usage:       "@bot command",
+		Usage:       "@jeremias command",
 		Lint:        "",
 		IsActive:    true,
 	})

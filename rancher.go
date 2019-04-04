@@ -52,6 +52,27 @@ func (ranchListener *RancherListener) RestartContainer(containerID string) {
 	log.Println("[INFO] Container restarted! ID:", idValue)
 }
 
+// StartService : Função responsável por dar start no container recebido por parâmetro
+func (ranchListener *RancherListener) StartService(ID string) {
+	url := fmt.Sprintf("%s/%s/services/%s?action=activate", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, "")
+
+	idValue := gjson.Get(resp, "id").String()
+
+	log.Println("[INFO] Service started! ID:", idValue)
+}
+
+// StopService : Função responsável por dar stop no container recebido por parâmetro
+func (ranchListener *RancherListener) StopService(ID string) {
+	url := fmt.Sprintf("%s/%s/services/%s?action=deactivate", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, "")
+
+	idValue := gjson.Get(resp, "id").String()
+
+	log.Println("[INFO] Service stopped! ID:", idValue)
+
+}
+
 // ListContainers é uma função que retornará uma lista de todos os containers de um projeto/environment
 func (ranchListener *RancherListener) ListContainers() string {
 	url := fmt.Sprintf("%s/%s/containers", ranchListener.baseURL, ranchListener.projectID)

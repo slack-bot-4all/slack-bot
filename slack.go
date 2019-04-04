@@ -27,6 +27,8 @@ const (
 	getServiceInfo   = "info-service"
 	upgradeService   = "upgrade-service"
 	listService      = "list-service"
+	startService     = "start-service"
+	stopService      = "stop-service"
 	commands         = "commands"
 )
 
@@ -115,6 +117,10 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.slackCanaryEnable(ev)
 	} else if strings.HasPrefix(message, canaryInfo) {
 		s.slackCanaryInfo(ev)
+	} else if strings.HasPrefix(message, startService) {
+		s.slackStartService(ev)
+	} else if strings.HasPrefix(message, stopService) {
+		s.slackStopService(ev)
 	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
 	} else {
@@ -367,13 +373,56 @@ func (s *SlackListener) slackLogsContainer(ev *slack.MessageEvent) {
 }
 
 func (s *SlackListener) slackRestartContainer(ev *slack.MessageEvent) {
-	s.createAndSendAttachment(
-		ev,
-		"Which container you need restart? :yum:",
-		restartContainer,
-		getContainers(),
-		nil,
-	)
+
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		id := args[2]
+
+		rancherListener.RestartContainer(id)
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Container restarted"), true))
+	} else {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Parameters is required"), true))
+	}
+
+	// s.createAndSendAttachment(
+	// 	ev,
+	// 	"Which container you need restart? :yum:",
+	// 	restartContainer,
+	// 	getContainers(),
+	// 	nil,
+	// )
+}
+
+func (s *SlackListener) slackStartService(ev *slack.MessageEvent) {
+
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		id := args[2]
+
+		rancherListener.StartService(id)
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Service started"), true))
+	} else {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Parameters is required"), true))
+	}
+}
+
+func (s *SlackListener) slackStopService(ev *slack.MessageEvent) {
+
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		id := args[2]
+
+		rancherListener.StopService(id)
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Service stopped"), true))
+	} else {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Parameters is required"), true))
+	}
 }
 
 func (s *SlackListener) interactiveMessage(ev *slack.MessageEvent) {
