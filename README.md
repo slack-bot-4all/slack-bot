@@ -98,6 +98,9 @@ Remember to externalize the HTTP port you set in ```.env```, so that the Slack A
 | `info-service` | *Command that brings information about a service that will be specified* |
 | `upgrade-service` | *Command that will make an upgrade of a service, changing its image according to which it is passed as parameter* |
 | `list-service` | *Command that brings an ID list \| Environment Services Name* |
+| `start-service` | *Command that start one service* |
+| `stop-service` | *Command that stop one service* |
+| `check-service` | *Command that check the health of one service* |
 | `commands` | *Command responsible for displaying the commands that are available in BOT* |
 
 ## Scheduling Commands
