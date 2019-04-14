@@ -17,19 +17,20 @@ import (
 )
 
 const (
-	canaryUpdate     = "update-canary"
-	canaryDisable    = "disable-canary"
-	canaryActivate   = "enable-canary"
-	canaryInfo       = "info-canary"
-	haproxyList      = "list-lb"
-	logsContainer    = "logs-container"
-	restartContainer = "restart-container"
-	getServiceInfo   = "info-service"
-	upgradeService   = "upgrade-service"
-	listService      = "list-service"
-	startService     = "start-service"
-	stopService      = "stop-service"
-	commands         = "commands"
+	canaryUpdate       = "update-canary"
+	canaryDisable      = "disable-canary"
+	canaryActivate     = "enable-canary"
+	canaryInfo         = "info-canary"
+	haproxyList        = "list-lb"
+	logsContainer      = "logs-container"
+	restartContainer   = "restart-container"
+	getServiceInfo     = "info-service"
+	upgradeService     = "upgrade-service"
+	listService        = "list-service"
+	startService       = "start-service"
+	stopService        = "stop-service"
+	checkServiceHealth = "check-service"
+	commands           = "commands"
 )
 
 // SlackListener é a struct que armazena dados do BOT
@@ -128,6 +129,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.slackStartService(ev)
 	} else if strings.HasPrefix(message, stopService) {
 		s.slackStopService(ev)
+	} else if strings.HasPrefix(message, checkServiceHealth) {
+		s.slackCheckServiceHealth(ev)
 	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
 	} else {
@@ -135,6 +138,61 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	return nil
+}
+
+func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
+
+	args := strings.Split(ev.Msg.Text, " ")
+	if len(args) == 3 {
+		var stackID string
+		var serviceID string
+		var serviceState string
+		var stackName string
+		var serviceName string
+
+		stackAndNameService := args[2]
+
+		argSplitted := strings.Split(stackAndNameService, "/")
+		if len(argSplitted) >= 2 {
+			stackName = argSplitted[0]
+			serviceName = argSplitted[1]
+		} else {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error! Check if you are passing correct argument, the correct is: @bot command stackName/serviceName", false))
+			return
+		}
+
+		respAllStacks := rancherListener.GetStacks()
+
+		dataStack := gjson.Get(respAllStacks, "data")
+		dataStack.ForEach(func(key, value gjson.Result) bool {
+			if value.Get("name").String() == stackName {
+				stackID = value.Get("id").String()
+			}
+			return true
+		})
+
+		respAllServicesFromStack := rancherListener.GetServicesFromStack(stackID)
+
+		dataService := gjson.Get(respAllServicesFromStack, "data")
+		dataService.ForEach(func(key, value gjson.Result) bool {
+			if value.Get("name").String() == serviceName {
+				serviceID = value.Get("id").String()
+				serviceState = value.Get("state").String()
+			}
+			return true
+		})
+
+		if stackID == "" || serviceID == "" {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error! Check if you are passing correct argument, the correct is: @bot command stackName/serviceName", false))
+			return
+		}
+
+		if serviceState != "active" {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Please, check the containers health, the service `%s/%s` actually is `%s`", stackName, serviceName, serviceState), true))
+		} else {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Service `%s/%s` is health", stackName, serviceName), true))
+		}
+	}
 }
 
 func (s *SlackListener) slackCanaryInfo(ev *slack.MessageEvent) {

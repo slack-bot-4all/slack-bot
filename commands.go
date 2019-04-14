@@ -111,6 +111,14 @@ func CreateCommands() {
 	})
 
 	Commands = append(Commands, Command{
+		Cmd:         checkServiceHealth,
+		Description: "Command used to check health of one service",
+		Usage:       "@jeremias command `stackName/serviceName`",
+		Lint:        "Put the Rancher Stack Name and Service Name on parameters, don't forget the '/'",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
 		Cmd:         commands,
 		Description: "Command responsible for displaying the commands that are available in BOT",
 		Usage:       "@jeremias command",

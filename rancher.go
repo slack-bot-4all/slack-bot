@@ -90,6 +90,33 @@ func (ranchListener *RancherListener) GetService(ID string) string {
 	return resp
 }
 
+// GetServiceStack é uma função que retorna o JSON de uma requisição que busca
+// informações da stack de um serviço em específico
+func (ranchListener *RancherListener) GetServiceStack(ID string) string {
+	url := fmt.Sprintf("%s/%s/services/%s/stack", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
+
+	return resp
+}
+
+// GetStacks é uma função que retorna o JSON de uma requisição que busca
+// todas as stacks do environment
+func (ranchListener *RancherListener) GetStacks() string {
+	url := fmt.Sprintf("%s/%s/stacks", ranchListener.baseURL, ranchListener.projectID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
+
+	return resp
+}
+
+// GetServicesFromStack é uma função que retorna o JSON de uma requisição que busca
+// todos os serviços de uma stack especificada
+func (ranchListener *RancherListener) GetServicesFromStack(ID string) string {
+	url := fmt.Sprintf("%s/%s/stacks/%s/services", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
+
+	return resp
+}
+
 // UpgradeService é a função que faz o upgrade da imagem do serviço, recebendo
 // como parâmetro o ID do serviço e o nome da nova imagem do serviço
 func (ranchListener *RancherListener) UpgradeService(ID string, newImage string) string {
