@@ -130,7 +130,12 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	} else if strings.HasPrefix(message, stopService) {
 		s.slackStopService(ev)
 	} else if strings.HasPrefix(message, checkServiceHealth) {
-		s.slackCheckServiceHealth(ev)
+		go func() {
+			for {
+				s.slackCheckServiceHealth(ev)
+				time.Sleep(time.Minute * 1)
+			}
+		}()
 	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
 	} else {
@@ -143,14 +148,16 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 
 	args := strings.Split(ev.Msg.Text, " ")
-	if len(args) == 3 {
+	if len(args) == 4 {
 		var stackID string
 		var serviceID string
 		var serviceState string
 		var stackName string
 		var serviceName string
+		var containers []Container
 
 		stackAndNameService := args[2]
+		channelToSendMessagae := args[3]
 
 		argSplitted := strings.Split(stackAndNameService, "/")
 		if len(argSplitted) >= 2 {
@@ -177,7 +184,7 @@ func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 		dataService.ForEach(func(key, value gjson.Result) bool {
 			if value.Get("name").String() == serviceName {
 				serviceID = value.Get("id").String()
-				serviceState = value.Get("state").String()
+				serviceState = value.Get("healthState").String()
 			}
 			return true
 		})
@@ -187,10 +194,35 @@ func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 			return
 		}
 
-		if serviceState != "active" {
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Please, check the containers health, the service `%s/%s` actually is `%s`", stackName, serviceName, serviceState), true))
-		} else {
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Service `%s/%s` is health", stackName, serviceName), true))
+		respAllInstances := rancherListener.GetInstances(serviceID)
+		dataInstances := gjson.Get(respAllInstances, "data")
+		dataInstances.ForEach(func(key, value gjson.Result) bool {
+			var container Container
+			container.ID = value.Get("id").String()
+			container.Name = value.Get("name").String()
+			container.State = value.Get("state").String()
+
+			containers = append(containers, container)
+
+			return true
+		})
+
+		if serviceState != "healthy" {
+			var downContainers []Container
+			var upContainers []Container
+
+			var msg string
+
+			for _, container := range containers {
+				if container.State == "running" {
+					upContainers = append(upContainers, container)
+				} else {
+					downContainers = append(downContainers, container)
+				}
+				msg += fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
+			}
+
+			s.client.PostMessage(channelToSendMessagae, slack.MsgOptionText(fmt.Sprintf("Please, check the containers health, the service `%s/%s` actually is `%s` with `%d` up containers and `%d` down containers\n\n%s", stackName, serviceName, serviceState, len(upContainers), len(downContainers), msg), true))
 		}
 	}
 }
@@ -547,9 +579,9 @@ func getContainers() []slack.AttachmentActionOption {
 	data := gjson.Get(containersList, "data")
 	data.ForEach(func(key, value gjson.Result) bool {
 		container := new(Container)
-		container.id = value.Get("id").String()
-		container.imageUUID = value.Get("imageUuid").String()
-		container.name = value.Get("name").String()
+		container.ID = value.Get("id").String()
+		container.ImageUUID = value.Get("imageUuid").String()
+		container.Name = value.Get("name").String()
 		containers = append(containers, container)
 
 		return true
@@ -561,8 +593,8 @@ func getContainers() []slack.AttachmentActionOption {
 	opcoes := []slack.AttachmentActionOption{}
 	for _, container := range containers {
 		opcoes = append(opcoes, slack.AttachmentActionOption{
-			Text:  fmt.Sprintf("%s | %s", container.id, container.name),
-			Value: container.id,
+			Text:  fmt.Sprintf("%s | %s", container.ID, container.Name),
+			Value: container.ID,
 		})
 	}
 

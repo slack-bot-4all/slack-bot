@@ -30,9 +30,10 @@ type RancherListener struct {
 
 // Container é uma estrutura que é usada para mostrar informações ao usuário
 type Container struct {
-	id        string
-	imageUUID string
-	name      string
+	ID        string `json:"id"`
+	ImageUUID string `json:"imageUuid"`
+	Name      string `json:"name"`
+	State     string `json:"state"`
 }
 
 // LoadBalancer é a estrutura que tem como objetivo representar um LoadBalancer do Rancher
@@ -76,6 +77,14 @@ func (ranchListener *RancherListener) StopService(ID string) {
 // ListContainers é uma função que retornará uma lista de todos os containers de um projeto/environment
 func (ranchListener *RancherListener) ListContainers() string {
 	url := fmt.Sprintf("%s/%s/containers", ranchListener.baseURL, ranchListener.projectID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
+
+	return resp
+}
+
+// GetInstances é uma função que retornará uma lista de todas as instâncias de um serviço
+func (ranchListener *RancherListener) GetInstances(serviceID string) string {
+	url := fmt.Sprintf("%s/%s/services/%s/instances", ranchListener.baseURL, ranchListener.projectID, serviceID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
