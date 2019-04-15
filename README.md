@@ -15,6 +15,7 @@ The bot's intent is to facilitate tasks that are common to Rancher users, such a
     - Can restart containers
     - Getlogs
     - Upgrades
+    - Canary Releases
 
 ## How to Works?
 
