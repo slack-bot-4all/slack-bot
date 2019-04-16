@@ -1,0 +1,93 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "6wizy64i6q+HjBCYBvOVmStl6/4=",
+			"path": "github.com/drewrm/splunk-golang",
+			"revision": "ac43e9e0edf2b98b3a3bef697c47a58d05f15ae9",
+			"revisionTime": "2019-03-14T08:33:56Z"
+		},
+		{
+			"checksumSHA1": "WgzN84Tx+7en7p/e8gSTupIqygw=",
+			"path": "github.com/gorilla/mux",
+			"revision": "c5c6c98bc25355028a63748a498942a6398ccd22",
+			"revisionTime": "2019-03-16T13:32:43Z"
+		},
+		{
+			"checksumSHA1": "hEnH6sgR83Qfx7UNnphNNlelmj0=",
+			"origin": "github.com/nlopes/slack/vendor/github.com/gorilla/websocket",
+			"path": "github.com/gorilla/websocket",
+			"revision": "842f6707117d5eb37728cd7dd036d29fb2aeb412",
+			"revisionTime": "2019-02-27T12:10:55Z"
+		},
+		{
+			"checksumSHA1": "tfuoKxYP+9JUAg9UCMEp74cIL2I=",
+			"path": "github.com/nlopes/slack",
+			"revision": "842f6707117d5eb37728cd7dd036d29fb2aeb412",
+			"revisionTime": "2019-02-27T12:10:55Z"
+		},
+		{
+			"checksumSHA1": "DY2gOON8opda18Z2WGVMln4f/to=",
+			"path": "github.com/nlopes/slack/internal/errorsx",
+			"revision": "842f6707117d5eb37728cd7dd036d29fb2aeb412",
+			"revisionTime": "2019-02-27T12:10:55Z"
+		},
+		{
+			"checksumSHA1": "DQyknBX6eTRG2cz+UuXxU9ZFqPQ=",
+			"path": "github.com/nlopes/slack/internal/timex",
+			"revision": "842f6707117d5eb37728cd7dd036d29fb2aeb412",
+			"revisionTime": "2019-02-27T12:10:55Z"
+		},
+		{
+			"checksumSHA1": "qyYGIzIDhpvtt4ut9Ifnimtuc30=",
+			"path": "github.com/nlopes/slack/slackutilsx",
+			"revision": "842f6707117d5eb37728cd7dd036d29fb2aeb412",
+			"revisionTime": "2019-02-27T12:10:55Z"
+		},
+		{
+			"checksumSHA1": "ynJSWoF6v+3zMnh9R0QmmG6iGV8=",
+			"origin": "github.com/nlopes/slack/vendor/github.com/pkg/errors",
+			"path": "github.com/pkg/errors",
+			"revision": "842f6707117d5eb37728cd7dd036d29fb2aeb412",
+			"revisionTime": "2019-02-27T12:10:55Z"
+		},
+		{
+			"checksumSHA1": "o1HHe02PnoGoTgP970FlkSNVKcc=",
+			"path": "github.com/rgamba/evtwebsocket",
+			"revision": "48b8cd9f86168bd4593c1d6be32ca874fc9bc4e4",
+			"revisionTime": "2018-10-29T23:49:08Z"
+		},
+		{
+			"checksumSHA1": "zX/h3nDEkaMwoUbsKuINlws8vJ4=",
+			"path": "github.com/tidwall/gjson",
+			"revision": "fb8e539484c9fb2df9f472bc0e3949a74c256f95",
+			"revisionTime": "2019-04-05T18:08:30Z"
+		},
+		{
+			"checksumSHA1": "8jl+NYRKijAXkUwjpy89Q60q00A=",
+			"path": "github.com/tidwall/match",
+			"revision": "33827db735fff6510490d69a8622612558a557ed",
+			"revisionTime": "2018-12-10T10:08:38Z"
+		},
+		{
+			"checksumSHA1": "ijmGS83faLA6LVpdeGkyRhqvQgM=",
+			"path": "github.com/tidwall/pretty",
+			"revision": "1166b9ac2b65e46a43d8618d30d1554f4652d49b",
+			"revisionTime": "2019-03-25T15:38:08Z"
+		},
+		{
+			"checksumSHA1": "IeRoFAG92dA1jUX27nMz1qczlOw=",
+			"path": "github.com/tidwall/sjson",
+			"revision": "25fb082a20e29e83fb7b7ef5f5919166aad1f084",
+			"revisionTime": "2019-02-28T20:39:17Z"
+		},
+		{
+			"checksumSHA1": "F+tqxPGFt5x7DKZakbbMmENX1oQ=",
+			"path": "golang.org/x/net/websocket",
+			"revision": "4a65cf94b67935be46fbc55ddaea48ae3f7a1471",
+			"revisionTime": "2019-04-12T09:16:49Z"
+		}
+	],
+	"rootPath": "github.com/slack-bot-4all/slack-bot"
+}
