@@ -200,7 +200,7 @@ func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 			var container Container
 			container.ID = value.Get("id").String()
 			container.Name = value.Get("name").String()
-			container.State = value.Get("state").String()
+			container.State = value.Get("healthState").String()
 
 			containers = append(containers, container)
 
@@ -214,7 +214,7 @@ func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 			var msg string
 
 			for _, container := range containers {
-				if container.State == "running" {
+				if container.State == "healthy" {
 					upContainers = append(upContainers, container)
 				} else {
 					downContainers = append(downContainers, container)
