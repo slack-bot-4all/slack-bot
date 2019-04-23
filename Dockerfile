@@ -2,6 +2,8 @@ FROM golang
 
 ENV FILE .env
 
+RUN go get ./...
+
 RUN mkdir /CORE
 
 ADD . /CORE/
