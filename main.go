@@ -68,17 +68,8 @@ func init() {
 }
 
 func main() {
+	// parsing environmnets to variables
 	flag.Parse()
-
-	log.Println(RancherAccessKey)
-	log.Println(RancherSecretKey)
-	log.Println(RancherBaseURL)
-	log.Println(RancherProjectID)
-	log.Println(SlackBotToken)
-	log.Println(SlackBotID)
-	log.Println(SlackBotChannel)
-	log.Println(Port)
-	log.Println(SlackBotVerificationToken)
 
 	t := time.Now()
 	fileName := fmt.Sprintf("logs/logs-%d%d%d%02d%02d%02d", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second())
