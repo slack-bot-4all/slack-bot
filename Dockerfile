@@ -1,13 +1,6 @@
 FROM golang
-
-ENV FILE .env
-
-RUN go get ./...
-
-RUN mkdir /CORE
-
-ADD . /CORE/
-
-WORKDIR /CORE/
-
-ENTRYPOINT [ "bash", "entrypoint.sh" ]
+RUN mkdir -p /go/src/github.com/slack-bot-4all/slack-bot
+COPY . /go/src/github.com/slack-bot-4all/slack-bot
+RUN cd /go/src/github.com/slack-bot-4all/slack-bot && go build -o Jeremias ./*.go && mv Jeremias /go/bin && mkdir -p /go/bin/logs
+WORKDIR /go/bin
+CMD ["./Jeremias"]
