@@ -4,13 +4,12 @@
 package main
 
 import (
-	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -56,56 +55,30 @@ var (
 	SplunkBaseURL string
 )
 
+func init() {
+	flag.StringVar(&RancherAccessKey, "rancher_access_key", os.Getenv("RANCHER_ACCESS_KEY"), "Access key to connect on Rancher API")
+	flag.StringVar(&RancherSecretKey, "rancher_secret_key", os.Getenv("RANCHER_SECRET_KEY"), "Secret key to connect on Rancher API")
+	flag.StringVar(&RancherBaseURL, "rancher_base_url", os.Getenv("RANCHER_BASE_URL"), "Base URL of Rancher API")
+	flag.StringVar(&RancherProjectID, "rancher_project_id", os.Getenv("RANCHER_PROJECT_ID"), "Project ID default to API requests")
+	flag.StringVar(&SlackBotToken, "slack_bot_token", os.Getenv("SLACK_BOT_TOKEN"), "Slack Bot Token to connect on Slack API")
+	flag.StringVar(&SlackBotID, "slack_bot_id", os.Getenv("SLACK_BOT_ID"), "Slack Bot ID to compare messages on channel's")
+	flag.StringVar(&SlackBotChannel, "slack_bot_channel", os.Getenv("SLACK_BOT_CHANNEL"), "Channel where the BOT will listen")
+	flag.StringVar(&Port, "http_port", os.Getenv("HTTP_PORT"), "HTTP Port where API's gonna run")
+	flag.StringVar(&SlackBotVerificationToken, "slack_bot_verification_token", os.Getenv("SLACK_BOT_VERIFICATION_TOKEN"), "Verification token of BOT")
+}
+
 func main() {
-	File := os.Getenv("FILE")
+	flag.Parse()
 
-	FileOpen, err := os.Open(File)
-	CheckErr("Erro ao abrir o arquivo de environments", err)
-
-	scanner := bufio.NewScanner(FileOpen)
-	scanner.Split(bufio.ScanLines)
-
-	var lines []string
-
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	CheckErr("Erro ao scannear arquivo de environments", scanner.Err())
-
-	for _, line := range lines {
-		chave := strings.Split(line, "=")[0]
-		valor := strings.Split(line, "=")[1]
-
-		switch chave {
-		case "RANCHER_ACCESS_KEY":
-			RancherAccessKey = valor
-		case "RANCHER_SECRET_KEY":
-			RancherSecretKey = valor
-		case "RANCHER_BASE_URL":
-			RancherBaseURL = valor
-		case "RANCHER_PROJECT_ID":
-			RancherProjectID = valor
-		case "SLACK_BOT_TOKEN":
-			SlackBotToken = valor
-		case "SLACK_BOT_ID":
-			SlackBotID = valor
-		case "SLACK_BOT_CHANNEL":
-			SlackBotChannel = valor
-		case "SLACK_BOT_VERIFICATION_TOKEN":
-			SlackBotVerificationToken = valor
-		case "HTTP_PORT":
-			Port = valor
-		case "SPLUNK_USERNAME":
-			SplunkUsername = valor
-		case "SPLUNK_PASSWORD":
-			SplunkPassword = valor
-		case "SPLUNK_BASE_URL":
-			SplunkBaseURL = valor
-		}
-
-		envs = append(envs, Env{Key: chave, Value: valor})
-	}
+	log.Println(RancherAccessKey)
+	log.Println(RancherSecretKey)
+	log.Println(RancherBaseURL)
+	log.Println(RancherProjectID)
+	log.Println(SlackBotToken)
+	log.Println(SlackBotID)
+	log.Println(SlackBotChannel)
+	log.Println(Port)
+	log.Println(SlackBotVerificationToken)
 
 	t := time.Now()
 	fileName := fmt.Sprintf("logs/logs-%d%d%d%02d%02d%02d", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second())
