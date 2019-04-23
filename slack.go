@@ -133,7 +133,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		go func() {
 			for {
 				s.slackCheckServiceHealth(ev)
-				time.Sleep(time.Minute * 1)
+				time.Sleep(time.Minute * 2)
 			}
 		}()
 	} else if strings.HasPrefix(message, commands) {
