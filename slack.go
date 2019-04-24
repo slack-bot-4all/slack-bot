@@ -19,21 +19,22 @@ import (
 )
 
 const (
-	canaryUpdate       = "update-canary"
-	canaryDisable      = "disable-canary"
-	canaryActivate     = "enable-canary"
-	canaryInfo         = "info-canary"
-	haproxyList        = "list-lb"
-	logsContainer      = "logs-container"
-	restartContainer   = "restart-container"
-	getServiceInfo     = "info-service"
-	upgradeService     = "upgrade-service"
-	listService        = "list-service"
-	startService       = "start-service"
-	stopService        = "stop-service"
-	checkServiceHealth = "check-service"
-	removeServiceCheck = "stop-check"
-	commands           = "commands"
+	canaryUpdate        = "update-canary"
+	canaryDisable       = "disable-canary"
+	canaryActivate      = "enable-canary"
+	canaryInfo          = "info-canary"
+	haproxyList         = "list-lb"
+	logsContainer       = "logs-container"
+	restartContainer    = "restart-container"
+	getServiceInfo      = "info-service"
+	upgradeService      = "upgrade-service"
+	listService         = "list-service"
+	startService        = "start-service"
+	stopService         = "stop-service"
+	checkServiceHealth  = "check-service"
+	removeServiceCheck  = "stop-task"
+	listAllRunningTasks = "list-task"
+	commands            = "commands"
 )
 
 // SlackListener é a struct que armazena dados do BOT
@@ -151,14 +152,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 			for {
 				s.slackCheckServiceHealth(ev)
-<<<<<<< HEAD
-				time.Sleep(time.Second * 5)
-				if shouldStop() {
-					break
-				}
-=======
 				time.Sleep(time.Minute * 2)
->>>>>>> a9e41240869d8c894218d7744c5923da3da745b1
 			}
 
 			return nil
@@ -168,6 +162,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		tasks = append(tasks, task)
 	} else if strings.HasPrefix(message, removeServiceCheck) {
 		s.stopServiceCheck(ev)
+	} else if strings.HasPrefix(message, listAllRunningTasks) {
+		s.listAllRunningTasks(ev)
 	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
 	} else {
@@ -175,6 +171,18 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	return nil
+}
+
+func (s *SlackListener) listAllRunningTasks(ev *slack.MessageEvent) {
+	msg := "*Running Tasks List:* \n\n"
+
+	for _, task := range tasks {
+		if task.ID != "" {
+			msg += fmt.Sprintf("`%s`\n", task.ID)
+		}
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
 func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {

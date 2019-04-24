@@ -121,8 +121,16 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         removeServiceCheck,
 		Description: "Command remove automatic service check",
-		Usage:       "@jeremias command `stackName/serviceName`",
-		Lint:        "Put the stackName and serviceName that you have informed on call to check",
+		Usage:       "@jeremias command `task-ID`",
+		Lint:        "Put the stackName and serviceName that you have informed on call to check. Task ID can be recovered with `list-task` command",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
+		Cmd:         listAllRunningTasks,
+		Description: "Command list all running tasks at the moment of called",
+		Usage:       "@jeremias command",
+		Lint:        "Return a list with ID of running tasks",
 		IsActive:    true,
 	})
 
