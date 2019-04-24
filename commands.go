@@ -113,8 +113,16 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         checkServiceHealth,
 		Description: "Command used to check health of one service",
-		Usage:       "@jeremias command `stackName/serviceName`",
+		Usage:       "@jeremias command `stackName/serviceName` `channel-to-send-alert`",
 		Lint:        "Put the Rancher Stack Name and Service Name on parameters, don't forget the '/'",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
+		Cmd:         removeServiceCheck,
+		Description: "Command remove automatic service check",
+		Usage:       "@jeremias command `stackName/serviceName`",
+		Lint:        "Put the stackName and serviceName that you have informed on call to check",
 		IsActive:    true,
 	})
 

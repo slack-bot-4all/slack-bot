@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cayohollanda/runner"
+
 	"github.com/nlopes/slack"
 	"github.com/tidwall/gjson"
 )
@@ -30,6 +32,7 @@ const (
 	startService       = "start-service"
 	stopService        = "stop-service"
 	checkServiceHealth = "check-service"
+	removeServiceCheck = "stop-check"
 	commands           = "commands"
 )
 
@@ -40,7 +43,10 @@ type SlackListener struct {
 	channelID string
 }
 
-var rancherListener *RancherListener
+var (
+	rancherListener *RancherListener
+	tasks           []*runner.Task
+)
 
 // StartBot é a função que inicia o BOT e o prepara para receber eventos de mensagens
 func (s *SlackListener) StartBot(rList *RancherListener) {
@@ -130,12 +136,34 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	} else if strings.HasPrefix(message, stopService) {
 		s.slackStopService(ev)
 	} else if strings.HasPrefix(message, checkServiceHealth) {
-		go func() {
+		var stackAndNameService string
+
+		args := strings.Split(ev.Msg.Text, " ")
+
+		if len(args) == 4 {
+			if strings.Contains(args[2], "/") {
+				stackAndNameService = args[2]
+			}
+		}
+
+		task := runner.Go(func(shouldStop runner.S) error {
+			defer func() {}()
+
 			for {
 				s.slackCheckServiceHealth(ev)
-				time.Sleep(time.Minute * 1)
+				time.Sleep(time.Second * 5)
+				if shouldStop() {
+					break
+				}
 			}
-		}()
+
+			return nil
+		})
+
+		task.ID = stackAndNameService
+		tasks = append(tasks, task)
+	} else if strings.HasPrefix(message, removeServiceCheck) {
+		s.stopServiceCheck(ev)
 	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
 	} else {
@@ -143,6 +171,30 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	return nil
+}
+
+func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		var stoppedTask bool
+
+		taskIDToStop := args[2]
+
+		for i, task := range tasks {
+			if task.ID == taskIDToStop {
+				task.Stop()
+				tasks[i] = &runner.Task{}
+				stoppedTask = true
+			}
+		}
+
+		if stoppedTask {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Task `%s` stopped successfully!", taskIDToStop), false))
+		} else {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Failed to stop task `%s`, check if this task is already running", taskIDToStop), false))
+		}
+	}
 }
 
 func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
