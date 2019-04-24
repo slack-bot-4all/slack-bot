@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "Eemb98UlyPeXlAdJgkM9xV/pIKo=",
+			"path": "github.com/cayohollanda/runner",
+			"revision": "e9da83808c0cf4ffc6ee43c87bd84d7b90854cee",
+			"revisionTime": "2019-04-24T17:49:35Z"
+		},
+		{
 			"checksumSHA1": "6wizy64i6q+HjBCYBvOVmStl6/4=",
 			"path": "github.com/drewrm/splunk-golang",
 			"revision": "ac43e9e0edf2b98b3a3bef697c47a58d05f15ae9",
