@@ -102,6 +102,7 @@ Remember to externalize the HTTP port you set in ```.env```, so that the Slack A
 | `start-service` | *Command that start one service* |
 | `stop-service` | *Command that stop one service* |
 | `check-service` | *Command that check the health of one service* |
+| `stop-check` | *Command that stop the one already created check* |
 | `commands` | *Command responsible for displaying the commands that are available in BOT* |
 
 ## Scheduling Commands
