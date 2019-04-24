@@ -5,20 +5,29 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 )
 
-type Kanye struct{
+type Kanye struct {
 	Quote string `json:"quote"`
-} 
+}
 
 // CheckErr : Função feita para checar os erros
 func CheckErr(message string, err error) {
 	if err != nil {
 		log.Printf("[ERROR] %s\n%s", message, err)
 	}
+}
+
+// PrintLogoOnConsole : prints logo on console
+func PrintLogoOnConsole() {
+	readedFile, _ := ioutil.ReadFile("./assets/LogoFile")
+
+	fmt.Println(string(readedFile))
 }
 
 // ConvertResponseToString : Converte uma série de dados do tipo ReadCloser
