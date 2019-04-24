@@ -308,7 +308,7 @@ func (s *SlackListener) slackCanaryInfo(ev *slack.MessageEvent) {
 			return
 		}
 		fmt.Println(msg)
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("ConfigHaprox:\n\n\"%s\"", msg), true))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("ConfigHaprox:\n\n\n%s\n", msg), true))
 	}
 }
 
@@ -477,9 +477,11 @@ func (s *SlackListener) slackListLoadBalancers(ev *slack.MessageEvent) {
 }
 
 func (s *SlackListener) slackUpdateCanary(ev *slack.MessageEvent) {
+	var channelToSendMessage string
+
 	args := strings.Split(ev.Msg.Text, " ")
 
-	if len(args) != 5 {
+	if len(args) < 5 {
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Command call error, correct syntax: @name-of-bot %s LB-id new-version-weight old-version-weight", canaryUpdate), false))
 		return
 	}
@@ -487,6 +489,10 @@ func (s *SlackListener) slackUpdateCanary(ev *slack.MessageEvent) {
 	lb := args[2]
 	newVersionPercent := args[3]
 	oldVersionPercent := args[4]
+
+	if len(args) == 6 {
+		channelToSendMessage = args[5]
+	}
 
 	resp := rancherListener.UpdateCustomHaproxyCfg(lb, newVersionPercent, oldVersionPercent)
 
@@ -496,6 +502,14 @@ func (s *SlackListener) slackUpdateCanary(ev *slack.MessageEvent) {
 	}
 	//v := strconv.FormatBool(resp)
 	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("File 'haproxy.cfg' updated successfuly!\n```%s```", resp), false))
+
+	if channelToSendMessage != "" {
+		resp := rancherListener.GetService(lb)
+
+		serviceName := gjson.Get(resp, "name").String()
+
+		s.client.PostMessage(channelToSendMessage, slack.MsgOptionText(fmt.Sprintf("Canary of `%s` has been updated.\nNew version: `%s`\nOld version: `%s`", serviceName, newVersionPercent, oldVersionPercent), false))
+	}
 }
 
 func (s *SlackListener) slackLogsContainer(ev *slack.MessageEvent) {

@@ -17,8 +17,8 @@ func CreateCommands() {
 	Commands = append(Commands, Command{
 		Cmd:         canaryUpdate,
 		Description: "Command that changes weights in Canary Deployment",
-		Usage:       "@jeremias command `lb-id` `new-version-weight` `old-version-weight`",
-		Lint:        "`lb-id` LoadBalancer ID to be edited | `new-version-weight` Weight to new version on canary | `old-version-weight` Weight to old version on canary",
+		Usage:       "@jeremias command `lb-id` `new-version-weight` `old-version-weight` `channel-to-send-alert (optional)`",
+		Lint:        "`lb-id` LoadBalancer ID to be edited | `new-version-weight` Weight to new version on canary | `old-version-weight` Weight to old version on canary | `channel-to-send-alert` Channel code to send non-technical alert. Ex.: GHHG3S9L4",
 		IsActive:    true,
 	})
 
