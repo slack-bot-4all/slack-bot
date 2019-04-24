@@ -68,6 +68,8 @@ func init() {
 }
 
 func main() {
+	PrintLogoOnConsole()
+
 	// parsing environmnets to variables
 	flag.Parse()
 

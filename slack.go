@@ -151,10 +151,14 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 			for {
 				s.slackCheckServiceHealth(ev)
+<<<<<<< HEAD
 				time.Sleep(time.Second * 5)
 				if shouldStop() {
 					break
 				}
+=======
+				time.Sleep(time.Minute * 2)
+>>>>>>> a9e41240869d8c894218d7744c5923da3da745b1
 			}
 
 			return nil
