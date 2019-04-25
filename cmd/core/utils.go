@@ -1,7 +1,7 @@
 // Slack BOT for Rancher API
 // Created by: https://github.com/magnonta and https://github.com/cayohollanda
 
-package main
+package core
 
 import (
 	"bytes"

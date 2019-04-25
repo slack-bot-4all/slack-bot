@@ -1,4 +1,4 @@
-package main
+package core
 
 // Command é a struct responsável por guardar informações referentes a um comando
 type Command struct {

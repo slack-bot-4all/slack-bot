@@ -1,7 +1,7 @@
 // Slack BOT for Rancher API
 // Created by: https://github.com/magnonta and https://github.com/cayohollanda
 
-package main
+package core
 
 import (
 	"flag"
@@ -53,6 +53,18 @@ var (
 
 	// SplunkBaseURL para login no Splunk
 	SplunkBaseURL string
+
+	// DatabaseUsername is a user to connect on MySQL database
+	DatabaseUsername string
+
+	// DatabasePassword is a password to connect on MySQL database
+	DatabasePassword string
+
+	// DatabaseURL is a URL to connect on MySQL database
+	DatabaseURL string
+
+	// DatabaseSchema is a schema to connect on MySQL database
+	DatabaseSchema string
 )
 
 func init() {
@@ -65,9 +77,14 @@ func init() {
 	flag.StringVar(&SlackBotChannel, "slack_bot_channel", os.Getenv("SLACK_BOT_CHANNEL"), "Channel where the BOT will listen")
 	flag.StringVar(&Port, "http_port", os.Getenv("HTTP_PORT"), "HTTP Port where API's gonna run")
 	flag.StringVar(&SlackBotVerificationToken, "slack_bot_verification_token", os.Getenv("SLACK_BOT_VERIFICATION_TOKEN"), "Verification token of BOT")
+	flag.StringVar(&DatabaseUsername, "database_username", os.Getenv("DATABASE_USERNAME"), "Username of db")
+	flag.StringVar(&DatabasePassword, "database_password", os.Getenv("DATABASE_PASSWORD"), "Password of db")
+	flag.StringVar(&DatabaseURL, "database_url", os.Getenv("DATABASE_URL"), "URL of db")
+	flag.StringVar(&DatabaseSchema, "database_schema", os.Getenv("DATABASE_SCHEMA"), "Schema of db")
 }
 
-func main() {
+// Start : start all proccesses
+func Start() {
 	PrintLogoOnConsole()
 
 	// parsing environmnets to variables

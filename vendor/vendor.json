@@ -15,6 +15,12 @@
 			"revisionTime": "2019-03-14T08:33:56Z"
 		},
 		{
+			"checksumSHA1": "xWc9p5Kq5cQbDIwbXHdc9v8sdMU=",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "d0a548181995c293eb09c61ef80099ba1cdbe8f5",
+			"revisionTime": "2019-04-23T11:20:50Z"
+		},
+		{
 			"checksumSHA1": "WgzN84Tx+7en7p/e8gSTupIqygw=",
 			"path": "github.com/gorilla/mux",
 			"revision": "c5c6c98bc25355028a63748a498942a6398ccd22",
@@ -26,6 +32,18 @@
 			"path": "github.com/gorilla/websocket",
 			"revision": "842f6707117d5eb37728cd7dd036d29fb2aeb412",
 			"revisionTime": "2019-02-27T12:10:55Z"
+		},
+		{
+			"checksumSHA1": "cGQumTyZMk2jBu314CJ1MGFQ9DY=",
+			"path": "github.com/jinzhu/gorm",
+			"revision": "7bc35615034c1d6994088c2cc925086fba6f565e",
+			"revisionTime": "2019-04-14T13:11:29Z"
+		},
+		{
+			"checksumSHA1": "4eelJOSLZoDzLuaJvgilOBVNovU=",
+			"path": "github.com/jinzhu/inflection",
+			"revision": "04140366298a54a039076d798123ffa108fff46c",
+			"revisionTime": "2018-03-08T03:36:59Z"
 		},
 		{
 			"checksumSHA1": "tfuoKxYP+9JUAg9UCMEp74cIL2I=",
