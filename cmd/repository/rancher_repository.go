@@ -13,3 +13,12 @@ func AddRancher(r *model.Rancher) error {
 
 	return nil
 }
+
+// ListRancher :
+func ListRancher(r *[]model.Rancher) (err error) {
+	if err = config.DB.Find(r).Error; err != nil {
+		return err
+	}
+
+	return nil
+}

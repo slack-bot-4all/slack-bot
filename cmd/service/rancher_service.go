@@ -19,3 +19,15 @@ func AddRancher(r *model.Rancher) error {
 
 	return nil
 }
+
+// ListRancher : list all ranchers
+func ListRancher() (ranchersList []model.Rancher, err error) {
+	var ranchers []model.Rancher
+
+	err = repository.ListRancher(&ranchers)
+	if err != nil {
+		return nil, err
+	}
+
+	return ranchers, nil
+}

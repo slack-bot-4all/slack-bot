@@ -51,20 +51,20 @@ var (
 
 // StartBot é a função que inicia o BOT e o prepara para receber eventos de mensagens
 func (s *SlackListener) StartBot(rList *RancherListener) {
-	log.Println("[INFO] Iniciando o BOT...")
+	log.Println("[INFO] Initializating BOT...")
 
 	rancherListener = rList
 
 	rtm := s.client.NewRTM()
 	go rtm.ManageConnection()
 
-	log.Println("[INFO] Conexão com o BOT feita com sucesso!")
+	log.Println("[INFO] BOT connection successful!")
 
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.ConnectedEvent:
 			s.client.PostMessage(s.channelID, slack.MsgOptionText("Hey brow, I'm here! Cry your tears :sob:", false))
-			log.Println("[INFO] BOT iniciado com sucesso!")
+			log.Println("[INFO] BOT started successfully!")
 		case *slack.MessageEvent:
 			s.handleMessageEvent(ev)
 		}

@@ -8,12 +8,11 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/nlopes/slack"
+	"github.com/slack-bot-4all/slack-bot/cmd/routes"
 )
 
 var (
@@ -85,8 +84,6 @@ func init() {
 
 // Start : start all proccesses
 func Start() {
-	PrintLogoOnConsole()
-
 	// parsing environmnets to variables
 	flag.Parse()
 
@@ -105,13 +102,13 @@ func Start() {
 
 	log.SetOutput(mw)
 
-	log.Println("[INFO] Sincronizando comandos...")
+	log.Println("[INFO] Updating commands...")
 	CreateCommands()
-	log.Println("[INFO] Comandos sincronizados com sucesso!")
+	log.Println("[INFO] Commands has been updated!")
 
 	client := slack.New(
 		SlackBotToken,
-		slack.OptionDebug(true),
+		slack.OptionDebug(false),
 		slack.OptionLog(log.New(mw, "SLfR: ", log.Lshortfile|log.LstdFlags)),
 	)
 
@@ -130,17 +127,7 @@ func Start() {
 
 	go slackListener.StartBot(rancherListener)
 
-	router := mux.NewRouter()
+	router := routes.GetRoutes()
 
-	router.HandleFunc("/env", GetEnvs).Methods("GET")
-	router.HandleFunc("/commands", GetCommands).Methods("GET")
-	router.Handle("/interaction", interactionHandler{
-		verificationToken: SlackBotVerificationToken,
-	})
-
-	log.Printf("[INFO] Servidor rodando na porta: %s", Port)
-	if err := http.ListenAndServe(":"+Port, router); err != nil {
-		log.Printf("[ERROR] %s", err)
-		os.Exit(1)
-	}
+	router.Run(":8080")
 }
