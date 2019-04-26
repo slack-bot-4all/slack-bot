@@ -37,8 +37,8 @@ const (
 	checkServiceHealth  = "service-check"
 	removeServiceCheck  = "task-stop"
 	listAllRunningTasks = "task-list"
-	listAllEnvironments = "environment-list"
-	selectEnvironment   = "environment-set"
+	listAllEnvironments = "env-list"
+	selectEnvironment   = "env-set"
 	selectRancher       = "rancher-set"
 	listRancher         = "rancher-list"
 	commands            = "commands"
@@ -546,10 +546,10 @@ func (s *SlackListener) slackCommandHelper(ev *slack.MessageEvent, message strin
 }
 
 func (s *SlackListener) slackHelper(ev *slack.MessageEvent) {
-	msg := "*Commands:* "
+	msg := "*Commands:*\n\n"
 
 	for _, cmd := range Commands {
-		msg += fmt.Sprintf("`%s` ", cmd.Cmd)
+		msg += fmt.Sprintf("`%s` -> %s\n", cmd.Cmd, cmd.Description)
 	}
 
 	msg += "\n\n_*PS.:* If you need detailed informations for a command, you can call command followed by *help*._\n_*Ex.:* @jeremias command help_"
