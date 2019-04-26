@@ -64,6 +64,8 @@ var (
 
 	// DatabaseSchema is a schema to connect on MySQL database
 	DatabaseSchema string
+
+	RanchListener RancherListener
 )
 
 func init() {
@@ -118,14 +120,14 @@ func Start() {
 		channelID: SlackBotChannel,
 	}
 
-	rancherListener := &RancherListener{
+	RanchListener = RancherListener{
 		accessKey: RancherAccessKey,
 		secretKey: RancherSecretKey,
 		baseURL:   RancherBaseURL,
 		projectID: RancherProjectID,
 	}
 
-	go slackListener.StartBot(rancherListener)
+	go slackListener.StartBot(&RanchListener)
 
 	router := routes.GetRoutes()
 

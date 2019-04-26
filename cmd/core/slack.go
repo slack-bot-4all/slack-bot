@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/cayohollanda/runner"
+	"github.com/slack-bot-4all/slack-bot/cmd/model"
+	"github.com/slack-bot-4all/slack-bot/cmd/repository"
 
 	"github.com/nlopes/slack"
 	"github.com/tidwall/gjson"
@@ -34,6 +36,9 @@ const (
 	checkServiceHealth  = "check-service"
 	removeServiceCheck  = "stop-task"
 	listAllRunningTasks = "list-task"
+	selectRancher       = "rancher-set"
+	listAllEnvironments = "environment-list"
+	selectEnvironment   = "environment-set"
 	commands            = "commands"
 )
 
@@ -110,6 +115,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		return nil
 	}
 
+	log.Printf("[INFO] New received message: %s", message)
+
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
 	if strings.HasPrefix(message, restartContainer) {
@@ -164,6 +171,12 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.stopServiceCheck(ev)
 	} else if strings.HasPrefix(message, listAllRunningTasks) {
 		s.listAllRunningTasks(ev)
+	} else if strings.HasPrefix(message, selectRancher) {
+		s.selectRancher(ev)
+	} else if strings.HasPrefix(message, listAllEnvironments) {
+		s.listAllEnvironments(ev)
+	} else if strings.HasPrefix(message, selectEnvironment) {
+		s.selectEnvironment(ev)
 	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
 	} else {
@@ -171,6 +184,75 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	return nil
+}
+
+func (s *SlackListener) selectEnvironment(ev *slack.MessageEvent) {
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		var idEnv string
+		var haveEnv bool
+
+		environment := args[2]
+
+		resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+		data := gjson.Get(resp, "data")
+		data.ForEach(func(key, value gjson.Result) bool {
+			if value.Get("name").String() == environment {
+				idEnv = value.Get("id").String()
+				haveEnv = true
+			}
+
+			return true
+		})
+
+		if haveEnv && idEnv != "" {
+			rancherListener.projectID = idEnv
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Environment `%s` selected successfully!", environment), false))
+			return
+		}
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Error on select environment `%s`, check if it exists!", environment), false))
+	}
+}
+
+func (s *SlackListener) listAllEnvironments(ev *slack.MessageEvent) {
+	resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+	msg := "*Environments from this Rancher:*\n\n"
+
+	data := gjson.Get(resp, "data")
+	data.ForEach(func(key, value gjson.Result) bool {
+		msg += fmt.Sprintf("`%s`\n", value.Get("name").String())
+
+		return true
+	})
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
+}
+
+func (s *SlackListener) selectRancher(ev *slack.MessageEvent) {
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 3 {
+		rancherInstance := args[2]
+
+		var rancher model.Rancher
+		rancher.Name = rancherInstance
+
+		err := repository.FindRancherByName(&rancher)
+		if err != nil {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Error on select Rancher `%s`, make sure it is registered!", rancherInstance), false))
+			return
+		}
+
+		rancherListener.baseURL = rancher.URL
+		rancherListener.accessKey = rancher.AccessKey
+		rancherListener.secretKey = rancher.SecretKey
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Rancher `%s` selected successfully!", rancherInstance), false))
+	}
 }
 
 func (s *SlackListener) listAllRunningTasks(ev *slack.MessageEvent) {
@@ -307,7 +389,7 @@ func (s *SlackListener) slackCanaryInfo(ev *slack.MessageEvent) {
 			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error", false))
 			return
 		}
-		fmt.Println(msg)
+
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("ConfigHaprox:\n\n\n%s\n", msg), true))
 	}
 }
@@ -604,7 +686,6 @@ func (s *SlackListener) interactiveMessage(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) >= 0 {
-		fmt.Println(args)
 		client := createHTTPClient()
 
 		req, err := http.NewRequest("GET", "https://api.kanye.rest", nil)

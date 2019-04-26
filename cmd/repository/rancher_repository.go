@@ -22,3 +22,12 @@ func ListRancher(r *[]model.Rancher) (err error) {
 
 	return nil
 }
+
+// FindRancherByName : consults the db with the name
+func FindRancherByName(r *model.Rancher) (err error) {
+	if err := config.DB.Where("name = ?", r.Name).First(r).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
