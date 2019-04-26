@@ -48,7 +48,7 @@ type Environment struct {
 
 // RestartContainer : Função responsável por dar restart no container recebido por parâmetro
 func (ranchListener *RancherListener) RestartContainer(containerID string) {
-	url := fmt.Sprintf("%s/projects/%s/containers/%s?action=restart", ranchListener.baseURL, ranchListener.projectID, containerID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/containers/%s?action=restart", ranchListener.baseURL, ranchListener.projectID, containerID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, "")
 
 	idValue := gjson.Get(resp, "id").String()
@@ -58,7 +58,7 @@ func (ranchListener *RancherListener) RestartContainer(containerID string) {
 
 // StartService : Função responsável por dar start no container recebido por parâmetro
 func (ranchListener *RancherListener) StartService(ID string) {
-	url := fmt.Sprintf("%s/projects/%s/services/%s?action=activate", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/services/%s?action=activate", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, "")
 
 	idValue := gjson.Get(resp, "id").String()
@@ -68,7 +68,7 @@ func (ranchListener *RancherListener) StartService(ID string) {
 
 // StopService : Função responsável por dar stop no container recebido por parâmetro
 func (ranchListener *RancherListener) StopService(ID string) {
-	url := fmt.Sprintf("%s/projects/%s/services/%s?action=deactivate", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/services/%s?action=deactivate", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, "")
 
 	idValue := gjson.Get(resp, "id").String()
@@ -79,7 +79,7 @@ func (ranchListener *RancherListener) StopService(ID string) {
 
 // ListContainers é uma função que retornará uma lista de todos os containers de um projeto/environment
 func (ranchListener *RancherListener) ListContainers() string {
-	url := fmt.Sprintf("%s/projects/%s/containers", ranchListener.baseURL, ranchListener.projectID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/containers", ranchListener.baseURL, ranchListener.projectID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
@@ -87,7 +87,7 @@ func (ranchListener *RancherListener) ListContainers() string {
 
 // GetInstances é uma função que retornará uma lista de todas as instâncias de um serviço
 func (ranchListener *RancherListener) GetInstances(serviceID string) string {
-	url := fmt.Sprintf("%s/projects/%s/services/%s/instances", ranchListener.baseURL, ranchListener.projectID, serviceID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/services/%s/instances", ranchListener.baseURL, ranchListener.projectID, serviceID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
@@ -96,7 +96,7 @@ func (ranchListener *RancherListener) GetInstances(serviceID string) string {
 // GetService é uma função que retorna o JSON de uma requisição que busca
 // informações de um único serviço
 func (ranchListener *RancherListener) GetService(ID string) string {
-	url := fmt.Sprintf("%s/projects/%s/services/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/services/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
@@ -105,7 +105,7 @@ func (ranchListener *RancherListener) GetService(ID string) string {
 // GetServiceStack é uma função que retorna o JSON de uma requisição que busca
 // informações da stack de um serviço em específico
 func (ranchListener *RancherListener) GetServiceStack(ID string) string {
-	url := fmt.Sprintf("%s/projects/%s/services/%s/stack", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/services/%s/stack", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
@@ -114,7 +114,7 @@ func (ranchListener *RancherListener) GetServiceStack(ID string) string {
 // GetStacks é uma função que retorna o JSON de uma requisição que busca
 // todas as stacks do environment
 func (ranchListener *RancherListener) GetStacks() string {
-	url := fmt.Sprintf("%s/projects/%s/stacks", ranchListener.baseURL, ranchListener.projectID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/stacks", ranchListener.baseURL, ranchListener.projectID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
@@ -123,7 +123,7 @@ func (ranchListener *RancherListener) GetStacks() string {
 // GetServicesFromStack é uma função que retorna o JSON de uma requisição que busca
 // todos os serviços de uma stack especificada
 func (ranchListener *RancherListener) GetServicesFromStack(ID string) string {
-	url := fmt.Sprintf("%s/projects/%s/stacks/%s/services", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/stacks/%s/services", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
@@ -147,7 +147,7 @@ func (ranchListener *RancherListener) UpgradeService(ID string, newImage string)
 	jsonRequest, err = sjson.Set(jsonRequest, "inServiceStrategy.launchConfig", data)
 	CheckErr("Error to set value of new variable of service JSON", err)
 
-	url := fmt.Sprintf("%s/projects/%s/services/%s?action=upgrade", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/services/%s?action=upgrade", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, jsonRequest)
 
 	return gjson.Get(resp, "launchConfig.imageUuid").String()
@@ -156,7 +156,7 @@ func (ranchListener *RancherListener) UpgradeService(ID string, newImage string)
 // ListServices é uma função que retorna o JSON (em string) de uma requisição que tem como
 // objetivo buscar todos os serviços do Environment
 func (ranchListener *RancherListener) ListServices() string {
-	url := fmt.Sprintf("%s/projects/%s/services", ranchListener.baseURL, ranchListener.projectID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/services", ranchListener.baseURL, ranchListener.projectID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
@@ -168,7 +168,7 @@ func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 	data.Add("follow", "true")
 	data.Add("lines", "50")
 
-	url := fmt.Sprintf("%s/projects/%s/containers/%s?action=logs", ranchListener.baseURL, ranchListener.projectID, containerID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/containers/%s?action=logs", ranchListener.baseURL, ranchListener.projectID, containerID)
 
 	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, `{"follow": true, "lines": 50}`)
 
@@ -239,7 +239,7 @@ func (ranchListener *RancherListener) DisableCanary(ID string) string {
 	responseString, err := sjson.Set(responseString, "lbConfig.config", newLbConfig)
 	CheckErr("Error to set new Custom haproxy.cfg on JSON", err)
 
-	url := fmt.Sprintf("%s/projects/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
 
 	return gjson.Get(resp, "lbConfig.config").String()
@@ -260,7 +260,7 @@ func (ranchListener *RancherListener) EnableCanary(ID string) string {
 	responseString, err := sjson.Set(responseString, "lbConfig.config", actualLbConfig)
 	CheckErr("Error to set new Custom haproxy.cfg on JSON", err)
 
-	url := fmt.Sprintf("%s/projects/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
 
 	return gjson.Get(resp, "lbConfig.config").String()
@@ -322,7 +322,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 	responseString, err := sjson.Set(responseString, "lbConfig.config", newLbConfig)
 	CheckErr("Error to set new Custom haproxy.cfg on JSON", err)
 
-	url := fmt.Sprintf("%s/projects/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/loadBalancerServices/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, PutHTTP, responseString)
 
 	return gjson.Get(resp, "lbConfig.config").String()
@@ -331,7 +331,7 @@ func (ranchListener *RancherListener) UpdateCustomHaproxyCfg(ID string, newPerce
 
 // GetHaproxyCfg Busca a Custom haproxy.cfg do LoadBalancer enviado como parâmetro
 func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
-	url := fmt.Sprintf(ranchListener.baseURL + "/projects/" + ranchListener.projectID + "/loadBalancerServices/" + containerID)
+	url := fmt.Sprintf(ranchListener.baseURL + "/v2-beta/projects/" + ranchListener.projectID + "/loadBalancerServices/" + containerID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	if gjson.Get(resp, "id").String() != containerID {
@@ -345,7 +345,7 @@ func (ranchListener *RancherListener) GetHaproxyCfg(containerID string) string {
 // de LoadBalancer, que pode ser usado para selects na interface
 // do BOT do Slack
 func (ranchListener *RancherListener) GetLoadBalancers() []*LoadBalancer {
-	url := fmt.Sprintf("%s/projects/%s/loadBalancerServices", ranchListener.baseURL, ranchListener.projectID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/loadBalancerServices", ranchListener.baseURL, ranchListener.projectID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	loadBalancersSlice := []*LoadBalancer{}
@@ -365,7 +365,7 @@ func (ranchListener *RancherListener) GetLoadBalancers() []*LoadBalancer {
 
 // GetAllEnvironmentsFromRancher : get all projects from Rancher
 func (RanchListener *RancherListener) GetAllEnvironmentsFromRancher() string {
-	url := fmt.Sprintf("%s/projects", RanchListener.baseURL)
+	url := fmt.Sprintf("%s/v2-beta/projects", RanchListener.baseURL)
 	resp := RanchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp
