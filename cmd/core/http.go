@@ -54,12 +54,12 @@ func (rancherListener *RancherListener) HTTPSendRancherRequest(url string, metho
 	default:
 		log.Println("[INFO] Not possible create request, method not found.")
 	}
-	CheckErr("[ERROR] Error to create request", err)
+	CheckErr("Error to create request", err)
 
 	rancherListener.RancherAuthAdd(req)
 
 	resp, err := client.Do(req)
-	CheckErr("[ERROR] Error to send request", err)
+	CheckErr("Error to send request", err)
 
 	return ConvertResponseToString(resp.Body)
 }

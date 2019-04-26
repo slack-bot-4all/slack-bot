@@ -67,6 +67,18 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 	log.Println("[INFO] BOT connection successful!")
 
+	task := runner.Go(func(shouldStop runner.S) error {
+		defer func() {}()
+
+		for {
+			s.executeTasks()
+			time.Sleep(time.Second * 5)
+		}
+
+		return nil
+	})
+	task.Running()
+
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.ConnectedEvent:
@@ -76,6 +88,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 			s.handleMessageEvent(ev)
 		}
 	}
+
 }
 
 func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
@@ -146,29 +159,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	} else if strings.HasPrefix(message, stopService) {
 		s.slackStopService(ev)
 	} else if strings.HasPrefix(message, checkServiceHealth) {
-		var stackAndNameService string
-
-		args := strings.Split(ev.Msg.Text, " ")
-
-		if len(args) == 4 {
-			if strings.Contains(args[2], "/") {
-				stackAndNameService = args[2]
-			}
-		}
-
-		task := runner.Go(func(shouldStop runner.S) error {
-			defer func() {}()
-
-			for {
-				s.slackCheckServiceHealth(ev)
-				time.Sleep(time.Minute * 2)
-			}
-
-			return nil
-		})
-
-		task.ID = stackAndNameService
-		tasks = append(tasks, task)
+		s.slackCheckServiceHealth(ev)
 	} else if strings.HasPrefix(message, removeServiceCheck) {
 		s.stopServiceCheck(ev)
 	} else if strings.HasPrefix(message, listAllRunningTasks) {
@@ -188,6 +179,97 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	return nil
+}
+
+func (s *SlackListener) executeTasks() {
+	var stackName string
+	var serviceName string
+	var stackID string
+	var serviceID string
+	var serviceState string
+	var containers []Container
+
+	tasks, err := service.ListTask()
+	if err != nil {
+		log.Println("[ERROR] Error on execute task check, no response from database")
+		return
+	}
+
+	for _, task := range tasks {
+		rancherListener := &RancherListener{
+			baseURL:   task.RancherURL,
+			accessKey: task.RancherAccessKey,
+			secretKey: task.RancherSecretKey,
+			projectID: task.RancherProjectID,
+		}
+
+		argSplitted := strings.Split(task.Service, "/")
+
+		if len(argSplitted) >= 2 {
+			stackName = argSplitted[0]
+			serviceName = argSplitted[1]
+		} else {
+			log.Println("Error! service name is not declared right. Right declaration example: stackName/serviceName")
+			return
+		}
+
+		respAllStacks := rancherListener.GetStacks()
+
+		dataStack := gjson.Get(respAllStacks, "data")
+		dataStack.ForEach(func(key, value gjson.Result) bool {
+			if value.Get("name").String() == stackName {
+				stackID = value.Get("id").String()
+			}
+			return true
+		})
+
+		respAllServicesFromStack := rancherListener.GetServicesFromStack(stackID)
+
+		dataService := gjson.Get(respAllServicesFromStack, "data")
+		dataService.ForEach(func(key, value gjson.Result) bool {
+			if value.Get("name").String() == serviceName {
+				serviceID = value.Get("id").String()
+				serviceState = value.Get("healthState").String()
+			}
+			return true
+		})
+
+		if stackID == "" || serviceID == "" {
+			log.Println("Error! Check if you are passing correct argument, the correct is: @bot command stackName/serviceName")
+			return
+		}
+
+		respAllInstances := rancherListener.GetInstances(serviceID)
+		dataInstances := gjson.Get(respAllInstances, "data")
+		dataInstances.ForEach(func(key, value gjson.Result) bool {
+			var container Container
+			container.ID = value.Get("id").String()
+			container.Name = value.Get("name").String()
+			container.State = value.Get("healthState").String()
+
+			containers = append(containers, container)
+
+			return true
+		})
+
+		if serviceState != "healthy" {
+			var downContainers []Container
+			var upContainers []Container
+
+			var msg string
+
+			for _, container := range containers {
+				if container.State == "healthy" {
+					upContainers = append(upContainers, container)
+				} else {
+					downContainers = append(downContainers, container)
+				}
+				msg += fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
+			}
+
+			s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the containers health, the service `%s/%s` actually is `%s` with `%d` up containers and `%d` down containers\n\n%s", stackName, serviceName, serviceState, len(upContainers), len(downContainers), msg), true))
+		}
+	}
 }
 
 func (s *SlackListener) listAllRanchers(ev *slack.MessageEvent) {
@@ -266,6 +348,7 @@ func (s *SlackListener) selectRancher(ev *slack.MessageEvent) {
 			return
 		}
 
+		rancherListener.ID = rancher.ID
 		rancherListener.baseURL = rancher.URL
 		rancherListener.accessKey = rancher.AccessKey
 		rancherListener.secretKey = rancher.SecretKey
@@ -311,89 +394,25 @@ func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
 }
 
 func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
-
 	args := strings.Split(ev.Msg.Text, " ")
 	if len(args) == 4 {
-		var stackID string
-		var serviceID string
-		var serviceState string
-		var stackName string
-		var serviceName string
-		var containers []Container
-
-		stackAndNameService := args[2]
-		channelToSendMessagae := args[3]
-
-		argSplitted := strings.Split(stackAndNameService, "/")
-		if len(argSplitted) >= 2 {
-			stackName = argSplitted[0]
-			serviceName = argSplitted[1]
-		} else {
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error! Check if you are passing correct argument, the correct is: @bot command stackName/serviceName", false))
-			return
+		task := &model.Task{
+			Service:            args[2],
+			ChannelToSendAlert: args[3],
+			RancherURL:         rancherListener.baseURL,
+			RancherAccessKey:   rancherListener.accessKey,
+			RancherSecretKey:   rancherListener.secretKey,
+			RancherProjectID:   rancherListener.projectID,
 		}
 
-		respAllStacks := rancherListener.GetStacks()
-
-		dataStack := gjson.Get(respAllStacks, "data")
-		dataStack.ForEach(func(key, value gjson.Result) bool {
-			if value.Get("name").String() == stackName {
-				stackID = value.Get("id").String()
-			}
-			return true
-		})
-
-		respAllServicesFromStack := rancherListener.GetServicesFromStack(stackID)
-
-		dataService := gjson.Get(respAllServicesFromStack, "data")
-		dataService.ForEach(func(key, value gjson.Result) bool {
-			if value.Get("name").String() == serviceName {
-				serviceID = value.Get("id").String()
-				serviceState = value.Get("healthState").String()
-			}
-			return true
-		})
-
-		if stackID == "" || serviceID == "" {
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error! Check if you are passing correct argument, the correct is: @bot command stackName/serviceName", false))
-			return
-		}
-
-		respAllInstances := rancherListener.GetInstances(serviceID)
-		dataInstances := gjson.Get(respAllInstances, "data")
-		dataInstances.ForEach(func(key, value gjson.Result) bool {
-			var container Container
-			container.ID = value.Get("id").String()
-			container.Name = value.Get("name").String()
-			container.State = value.Get("healthState").String()
-
-			containers = append(containers, container)
-
-			return true
-		})
-
-		if serviceState != "healthy" {
-			var downContainers []Container
-			var upContainers []Container
-
-			var msg string
-
-			for _, container := range containers {
-				if container.State == "healthy" {
-					upContainers = append(upContainers, container)
-				} else {
-					downContainers = append(downContainers, container)
-				}
-				msg += fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
-			}
-
-			s.client.PostMessage(channelToSendMessagae, slack.MsgOptionText(fmt.Sprintf("Please, check the containers health, the service `%s/%s` actually is `%s` with `%d` up containers and `%d` down containers\n\n%s", stackName, serviceName, serviceState, len(upContainers), len(downContainers), msg), true))
+		err := service.AddTask(task)
+		if err != nil {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on register task, verify if BOT haves connection with database", false))
 		}
 	}
 }
 
 func (s *SlackListener) slackCanaryInfo(ev *slack.MessageEvent) {
-
 	args := strings.Split(ev.Msg.Text, " ")
 	if len(args) == 3 {
 		lbid := args[2]

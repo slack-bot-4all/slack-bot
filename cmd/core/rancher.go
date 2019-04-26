@@ -22,6 +22,7 @@ import (
 
 // RancherListener é uma estrutura onde ficam armazenados os dados de acesso ao Rancher API
 type RancherListener struct {
+	ID        uint
 	accessKey string
 	secretKey string
 	baseURL   string
@@ -41,9 +42,6 @@ type Container struct {
 type LoadBalancer struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
-}
-
-type Environment struct {
 }
 
 // RestartContainer : Função responsável por dar restart no container recebido por parâmetro

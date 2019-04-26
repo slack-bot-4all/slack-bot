@@ -38,7 +38,7 @@ func initializeDB() error {
 
 	log.Println("[INFO] Connected to database")
 
-	config.DB.AutoMigrate(&model.Rancher{}, &model.User{})
+	config.DB.AutoMigrate(&model.Rancher{}, &model.User{}, &model.Task{})
 
 	return nil
 }
