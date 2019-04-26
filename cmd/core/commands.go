@@ -135,6 +135,30 @@ func CreateCommands() {
 	})
 
 	Commands = append(Commands, Command{
+		Cmd:         selectRancher,
+		Description: "Command sets the selected Rancher, to next requests",
+		Usage:       "@jeremias command `rancher-name`",
+		Lint:        "Receives Rancher name that has registered on database",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
+		Cmd:         listAllEnvironments,
+		Description: "Command list all environments of selected Rancher",
+		Usage:       "@jeremias command",
+		Lint:        "Return a list of all environments",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
+		Cmd:         selectEnvironment,
+		Description: "Command to set a environment to next requests on Rancher",
+		Usage:       "@jeremias command `environment-name`",
+		Lint:        "The environment name can be recovered with environment-list command",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
 		Cmd:         commands,
 		Description: "Command responsible for displaying the commands that are available in BOT",
 		Usage:       "@jeremias command",
