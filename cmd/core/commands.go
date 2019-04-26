@@ -135,14 +135,6 @@ func CreateCommands() {
 	})
 
 	Commands = append(Commands, Command{
-		Cmd:         selectRancher,
-		Description: "Command sets the selected Rancher, to next requests",
-		Usage:       "@jeremias command `rancher-name`",
-		Lint:        "Receives Rancher name that has registered on database",
-		IsActive:    true,
-	})
-
-	Commands = append(Commands, Command{
 		Cmd:         listAllEnvironments,
 		Description: "Command list all environments of selected Rancher",
 		Usage:       "@jeremias command",
@@ -155,6 +147,22 @@ func CreateCommands() {
 		Description: "Command to set a environment to next requests on Rancher",
 		Usage:       "@jeremias command `environment-name`",
 		Lint:        "The environment name can be recovered with environment-list command",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
+		Cmd:         selectRancher,
+		Description: "Command sets the selected Rancher, to next requests",
+		Usage:       "@jeremias command `rancher-name`",
+		Lint:        "Receives Rancher name that has registered on database",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
+		Cmd:         listRancher,
+		Description: "Command to list all registered Ranchers on database",
+		Usage:       "@jeremias command",
+		Lint:        "Returns `name, url and access key of all ranchers` (not returns secret key for security)",
 		IsActive:    true,
 	})
 

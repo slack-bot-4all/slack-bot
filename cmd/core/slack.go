@@ -15,6 +15,7 @@ import (
 	"github.com/cayohollanda/runner"
 	"github.com/slack-bot-4all/slack-bot/cmd/model"
 	"github.com/slack-bot-4all/slack-bot/cmd/repository"
+	"github.com/slack-bot-4all/slack-bot/cmd/service"
 
 	"github.com/nlopes/slack"
 	"github.com/tidwall/gjson"
@@ -39,6 +40,7 @@ const (
 	listAllEnvironments = "environment-list"
 	selectEnvironment   = "environment-set"
 	selectRancher       = "rancher-set"
+	listRancher         = "rancher-list"
 	commands            = "commands"
 )
 
@@ -175,6 +177,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.selectRancher(ev)
 	} else if strings.HasPrefix(message, listAllEnvironments) {
 		s.listAllEnvironments(ev)
+	} else if strings.HasPrefix(message, listRancher) {
+		s.listAllRanchers(ev)
 	} else if strings.HasPrefix(message, selectEnvironment) {
 		s.selectEnvironment(ev)
 	} else if strings.HasPrefix(message, commands) {
@@ -184,6 +188,21 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	return nil
+}
+
+func (s *SlackListener) listAllRanchers(ev *slack.MessageEvent) {
+	ranchers, err := service.ListRancher()
+	if err != nil {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error, verify if database is active", false))
+		return
+	}
+
+	msg := "*Registered Ranchers:*\n\n"
+	for _, rancher := range ranchers {
+		msg += fmt.Sprintf("Name: `%s`\nURL: `%s`\nAccess Key: `%s`\n\n", rancher.Name, rancher.URL, rancher.AccessKey)
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 }
 
 func (s *SlackListener) selectEnvironment(ev *slack.MessageEvent) {
