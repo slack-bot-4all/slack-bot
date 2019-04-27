@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/cayohollanda/runner"
-	"github.com/slack-bot-4all/slack-bot/cmd/model"
-	"github.com/slack-bot-4all/slack-bot/cmd/repository"
-	"github.com/slack-bot-4all/slack-bot/cmd/service"
+	"github.com/slack-bot-4all/slack-bot/src/model"
+	"github.com/slack-bot-4all/slack-bot/src/repository"
+	"github.com/slack-bot-4all/slack-bot/src/service"
 
 	"github.com/nlopes/slack"
 	"github.com/tidwall/gjson"

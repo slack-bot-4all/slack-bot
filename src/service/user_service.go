@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/slack-bot-4all/slack-bot/cmd/model"
-	"github.com/slack-bot-4all/slack-bot/cmd/repository"
+	"github.com/slack-bot-4all/slack-bot/src/model"
+	"github.com/slack-bot-4all/slack-bot/src/repository"
 )
 
 // AddUser : have a business rules to add a User to db

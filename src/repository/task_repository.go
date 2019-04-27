@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/slack-bot-4all/slack-bot/cmd/config"
-	"github.com/slack-bot-4all/slack-bot/cmd/model"
+	"github.com/slack-bot-4all/slack-bot/src/config"
+	"github.com/slack-bot-4all/slack-bot/src/model"
 )
 
 // AddTask : add a Task to database

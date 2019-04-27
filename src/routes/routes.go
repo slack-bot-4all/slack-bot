@@ -6,10 +6,10 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
-	"github.com/slack-bot-4all/slack-bot/cmd/config"
-	"github.com/slack-bot-4all/slack-bot/cmd/model"
-	"github.com/slack-bot-4all/slack-bot/cmd/repository"
-	"github.com/slack-bot-4all/slack-bot/cmd/resource"
+	"github.com/slack-bot-4all/slack-bot/src/config"
+	"github.com/slack-bot-4all/slack-bot/src/model"
+	"github.com/slack-bot-4all/slack-bot/src/repository"
+	"github.com/slack-bot-4all/slack-bot/src/resource"
 )
 
 // ErrorMap : struct

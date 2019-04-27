@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/nlopes/slack"
-	"github.com/slack-bot-4all/slack-bot/cmd/routes"
+	"github.com/slack-bot-4all/slack-bot/src/routes"
 )
 
 var (

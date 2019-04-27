@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/slack-bot-4all/slack-bot/cmd/model"
+	"github.com/slack-bot-4all/slack-bot/src/model"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	"github.com/slack-bot-4all/slack-bot/cmd/config"
-	"github.com/slack-bot-4all/slack-bot/cmd/core"
+	"github.com/slack-bot-4all/slack-bot/src/config"
+	"github.com/slack-bot-4all/slack-bot/src/core"
 )
 
 func main() {
