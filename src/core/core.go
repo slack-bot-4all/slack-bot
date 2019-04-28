@@ -11,7 +11,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/nlopes/slack"
+	"github.com/slack-bot-4all/slack-bot/src/model"
+	"github.com/slack-bot-4all/slack-bot/src/repository"
 	"github.com/slack-bot-4all/slack-bot/src/routes"
 )
 
@@ -89,6 +92,15 @@ func Start() {
 	// parsing environmnets to variables
 	flag.Parse()
 
+	if SlackBotToken == "" || SlackBotID == "" || SlackBotChannel == "" || Port == "" || DatabaseURL == "" || DatabaseUsername == "" || DatabasePassword == "" || DatabaseSchema == "" {
+		log.Fatal("[ERROR] To run the BOT, you need to set the environments, questions, see README")
+	}
+
+	err := initializeDB()
+	if err != nil {
+		log.Fatalf("[ERROR] Error to connect on database\n%s", err.Error())
+	}
+
 	t := time.Now()
 	fileName := fmt.Sprintf("logs/logs-%d%d%d%02d%02d%02d", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second())
 	f, err := os.Create(fileName)
@@ -132,4 +144,34 @@ func Start() {
 	router := routes.GetRoutes()
 
 	router.Run(":8080")
+}
+
+func initializeDB() error {
+	var err error
+	DB, err = gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", DatabaseUsername, DatabasePassword, DatabaseURL, DatabaseSchema))
+
+	// u := model.User{
+	// 	Username: "admin",
+	// 	Password: "admin",
+	// }
+	// err = repository.AddUser(&u)
+
+	if err != nil {
+		return err
+	}
+
+	log.Println("[INFO] Connected to database")
+
+	DB.AutoMigrate(&model.Rancher{}, &model.User{}, &model.Task{})
+
+	adminUser := model.User{
+		Username: "admin",
+		Password: "admin",
+	}
+	err = repository.FindUserByUsername(&adminUser)
+	if err != nil {
+		repository.AddUser(&adminUser)
+	}
+
+	return nil
 }
