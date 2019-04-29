@@ -144,18 +144,12 @@ func Start() {
 
 	router := routes.GetRoutes()
 
-	router.Run(":8080")
+	router.Run(fmt.Sprintf(":%s", Port))
 }
 
 func initializeDB() error {
 	var err error
 	config.DB, err = gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", DatabaseUsername, DatabasePassword, DatabaseURL, DatabaseSchema))
-
-	// u := model.User{
-	// 	Username: "admin",
-	// 	Password: "admin",
-	// }
-	// err = repository.AddUser(&u)
 
 	if err != nil {
 		return err
