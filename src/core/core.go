@@ -13,6 +13,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/nlopes/slack"
+	"github.com/slack-bot-4all/slack-bot/src/config"
 	"github.com/slack-bot-4all/slack-bot/src/model"
 	"github.com/slack-bot-4all/slack-bot/src/repository"
 	"github.com/slack-bot-4all/slack-bot/src/routes"
@@ -148,7 +149,7 @@ func Start() {
 
 func initializeDB() error {
 	var err error
-	DB, err = gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", DatabaseUsername, DatabasePassword, DatabaseURL, DatabaseSchema))
+	config.DB, err = gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", DatabaseUsername, DatabasePassword, DatabaseURL, DatabaseSchema))
 
 	// u := model.User{
 	// 	Username: "admin",
@@ -162,7 +163,7 @@ func initializeDB() error {
 
 	log.Println("[INFO] Connected to database")
 
-	DB.AutoMigrate(&model.Rancher{}, &model.User{}, &model.Task{})
+	config.DB.AutoMigrate(&model.Rancher{}, &model.User{}, &model.Task{})
 
 	adminUser := model.User{
 		Username: "admin",
