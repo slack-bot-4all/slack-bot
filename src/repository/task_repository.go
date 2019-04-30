@@ -22,3 +22,12 @@ func ListTask(t *[]model.Task) (err error) {
 
 	return nil
 }
+
+// DeleteTask :
+func DeleteTask(t *model.Task) (err error) {
+	if err := config.DB.Where("id = ?", t.ID).Delete(t).Error; err != nil {
+		return err
+	}
+
+	return nil
+}

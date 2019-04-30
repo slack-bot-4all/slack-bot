@@ -31,3 +31,12 @@ func ListTask() (tasksList []model.Task, err error) {
 
 	return tasks, nil
 }
+
+// DeleteTask :
+func DeleteTask(t model.Task) error {
+	if err := repository.DeleteTask(&t); err != nil {
+		return err
+	}
+
+	return nil
+}

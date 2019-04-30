@@ -34,7 +34,7 @@ const (
 	listService         = "service-list"
 	startService        = "service-start"
 	stopService         = "service-stop"
-	checkServiceHealth  = "service-check"
+	checkServiceHealth  = "task-add"
 	removeServiceCheck  = "task-stop"
 	listAllRunningTasks = "task-list"
 	listAllEnvironments = "env-list"
@@ -72,10 +72,8 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Minute * 2)
 		}
-
-		return nil
 	})
 	task.Running()
 
@@ -360,9 +358,16 @@ func (s *SlackListener) selectRancher(ev *slack.MessageEvent) {
 func (s *SlackListener) listAllRunningTasks(ev *slack.MessageEvent) {
 	msg := "*Running Tasks List:* \n\n"
 
+	var tasks []model.Task
+	err := repository.ListTask(&tasks)
+	if err != nil {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on check running tasks. Verify if the BOT have connection with database", false))
+		return
+	}
+
 	for _, task := range tasks {
-		if task.ID != "" {
-			msg += fmt.Sprintf("`%s`\n", task.ID)
+		if string(task.ID) != "" {
+			msg += fmt.Sprintf("`%s`\n", task.Service)
 		}
 	}
 
@@ -373,23 +378,35 @@ func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
 
 	if len(args) == 3 {
-		var stoppedTask bool
-
 		taskIDToStop := args[2]
 
-		for i, task := range tasks {
-			if task.ID == taskIDToStop {
-				task.Stop()
-				tasks[i] = &runner.Task{}
-				stoppedTask = true
+		var tasks []model.Task
+		err := repository.ListTask(&tasks)
+
+		if err != nil {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Failed to stop task `%s`, check if this task is already running or if the database is running", taskIDToStop), false))
+			return
+		}
+
+		var taskToStop model.Task
+		for _, task := range tasks {
+			if task.Service == taskIDToStop {
+				taskToStop = task
 			}
 		}
 
-		if stoppedTask {
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Task `%s` stopped successfully!", taskIDToStop), false))
-		} else {
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Failed to stop task `%s`, check if this task is already running", taskIDToStop), false))
+		if taskToStop.Service == "" {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Failed to stop task `%s`. Verify if this task is running", taskIDToStop), false))
+			return
 		}
+
+		err = service.DeleteTask(taskToStop)
+		if err != nil {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Failed to stop task `%s`", taskIDToStop), false))
+			return
+		}
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Task `%s` stopped successfully!", taskIDToStop), false))
 	}
 }
 
