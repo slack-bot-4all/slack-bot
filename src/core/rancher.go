@@ -368,3 +368,39 @@ func (RanchListener *RancherListener) GetAllEnvironmentsFromRancher() string {
 
 	return resp
 }
+
+// SearchForLbPercent : Procura pelo percentual atual do LB dentro do lbConfig.config
+func (ranchListener *RancherListener) SearchForLbPercent(ID string) (new string, old string) {
+	var (
+		returnNew string
+		returnOld string
+		lines     []string
+	)
+
+	ranchListener.EnableCanary(ID)
+	responseString := ranchListener.GetHaproxyCfg(ID)
+	actualLbConfig := gjson.Get(responseString, "lbConfig.config").String()
+
+	scanner := bufio.NewScanner(strings.NewReader(actualLbConfig))
+
+	for scanner.Scan() {
+		lines = strings.Split(scanner.Text(), "\n")
+		if strings.HasPrefix(lines[0], "server") {
+			new := regexp.MustCompile(".+new.+(\\d{2})")
+			old := regexp.MustCompile(".+old.+(\\d{2})")
+			l := new.FindStringSubmatch(scanner.Text())
+			z := old.FindStringSubmatch(scanner.Text())
+
+			if len(l) == 2 {
+				returnNew = l[1]
+			}
+
+			if len(z) == 2 {
+				returnOld = z[1]
+			}
+		}
+	}
+
+	return returnNew, returnOld
+
+}
