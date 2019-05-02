@@ -23,6 +23,14 @@ func CreateCommands() {
 	})
 
 	Commands = append(Commands, Command{
+		Cmd:         canaryUpTen,
+		Description: "Command to add 10% to canary release of a load balancer",
+		Usage:       "@jeremias command `lb-id` `channel-to-send-alert (optional)`",
+		Lint:        "",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
 		Cmd:         canaryActivate,
 		Description: "Command that actives the Canary Deployment in a specified Load Balancer",
 		Usage:       "@jeremias command `*lb-id*`",
