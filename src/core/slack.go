@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,6 +27,7 @@ const (
 	canaryDisable       = "canary-disable"
 	canaryActivate      = "canary-enable"
 	canaryInfo          = "canary-info"
+	canaryUpTen         = "canary-up"
 	haproxyList         = "lb-list"
 	logsContainer       = "container-logs"
 	restartContainer    = "container-restart"
@@ -172,6 +174,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.selectEnvironment(ev)
 	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
+	} else if strings.HasPrefix(message, canaryUpTen) {
+		s.slackCanaryUpTen(ev)
 	} else {
 		s.interactiveMessage(ev)
 	}
@@ -847,4 +851,45 @@ func getLbOptions() []slack.AttachmentActionOption {
 	}
 
 	return opcoes
+}
+func (s *SlackListener) slackCanaryUpTen(ev *slack.MessageEvent) {
+	var channelToSendMessage string
+
+	args := strings.Split(ev.Msg.Text, " ")
+	if len(args) < 3 {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Command call error, correct syntax: @name-of-bot %s canaryUpTen LB-id channel-to-send-alert (optional)", canaryUpTen), false))
+		return
+	}
+	if len(args) == 4 {
+		channelToSendMessage = args[3]
+	}
+	lb := args[2]
+
+	new, old := rancherListener.SearchForLbPercent(lb)
+
+	newToInt, _ := strconv.Atoi(new)
+	oldToInt, _ := strconv.Atoi(old)
+
+	newMoreTen := newToInt + 10
+	oldLessTen := oldToInt - 10
+
+	newToString := strconv.Itoa(newMoreTen)
+	oldToString := strconv.Itoa(oldLessTen)
+
+	resp := rancherListener.UpdateCustomHaproxyCfg(lb, newToString, oldToString)
+
+	if resp == "error" {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on update haproxy.cfg, check if ID param is right, the body of haproxy.cfg is empty or if weights not sum 100", false))
+		return
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("File 'haproxy.cfg' updated successfuly!\n```%s```", resp), false))
+
+	if channelToSendMessage != "" {
+		resp := rancherListener.GetService(lb)
+
+		serviceName := gjson.Get(resp, "name").String()
+
+		s.client.PostMessage(channelToSendMessage, slack.MsgOptionText(fmt.Sprintf("Canary of `%s` has been updated.\nNew version: `%s`\nOld version: `%s`", serviceName, newToString, oldToString), false))
+	}
 }
