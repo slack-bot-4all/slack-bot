@@ -425,6 +425,8 @@ func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 		err := service.AddTask(task)
 		if err != nil {
 			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on register task, verify if BOT haves connection with database", false))
+		} else {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Task added successfully!", false))
 		}
 	}
 }
