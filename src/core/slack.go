@@ -297,6 +297,7 @@ func (s *SlackListener) selectEnvironment(ev *slack.MessageEvent) {
 		var haveEnv bool
 
 		environment := args[2]
+		environment = strings.Replace(environment, "_", " ", -1)
 
 		resp := rancherListener.GetAllEnvironmentsFromRancher()
 
