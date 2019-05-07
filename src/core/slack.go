@@ -371,7 +371,7 @@ func (s *SlackListener) listAllRunningTasks(ev *slack.MessageEvent) {
 
 	for _, task := range tasks {
 		if string(task.ID) != "" {
-			msg += fmt.Sprintf("`%s`\n", task.Service)
+			msg += fmt.Sprintf("*%d* / `%s`\n", task.ID, task.Service)
 		}
 	}
 
@@ -394,7 +394,7 @@ func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
 
 		var taskToStop model.Task
 		for _, task := range tasks {
-			if task.Service == taskIDToStop {
+			if fmt.Sprintf("%d", task.ID) == taskIDToStop {
 				taskToStop = task
 			}
 		}
@@ -410,7 +410,7 @@ func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
 			return
 		}
 
-		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Task `%s` stopped successfully!", taskIDToStop), false))
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Task *%s*/`%s` stopped successfully!", taskIDToStop, taskToStop.Service), false))
 	}
 }
 
