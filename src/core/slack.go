@@ -46,6 +46,10 @@ const (
 	commands            = "commands"
 )
 
+// Global variables
+
+var envName string
+
 // SlackListener é a struct que armazena dados do BOT
 type SlackListener struct {
 	client    *slack.Client
@@ -305,6 +309,7 @@ func (s *SlackListener) selectEnvironment(ev *slack.MessageEvent) {
 		data.ForEach(func(key, value gjson.Result) bool {
 			if value.Get("name").String() == environment {
 				idEnv = value.Get("id").String()
+				envName = environment
 				haveEnv = true
 			}
 
@@ -372,7 +377,7 @@ func (s *SlackListener) listAllRunningTasks(ev *slack.MessageEvent) {
 
 	for _, task := range tasks {
 		if string(task.ID) != "" {
-			msg += fmt.Sprintf("*%d* / `%s`\n", task.ID, task.Service)
+			msg += fmt.Sprintf("*%d* / %s - Environment `%s`\n", task.ID, task.Service, envName)
 		}
 	}
 
