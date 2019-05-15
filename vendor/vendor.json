@@ -76,10 +76,10 @@
 			"revisionTime": "2019-03-01T06:25:29Z"
 		},
 		{
-			"checksumSHA1": "90S9sFqcIo/uuwQzz1t/wYs7GEs=",
+			"checksumSHA1": "iGoOUU4qcPTY7n7NJ593cAHuEfI=",
 			"path": "github.com/gin-gonic/gin",
-			"revision": "b869fe1415e4b9eb52f247441830d502aece2d4d",
-			"revisionTime": "2018-08-14T08:58:52Z",
+			"revision": "8ee9d959a0bcc132fae25ce61881c7effbe5c2f5",
+			"revisionTime": "2019-05-13T02:17:31Z",
 			"version": "v1.3",
 			"versionExact": "v1.3.0"
 		},
