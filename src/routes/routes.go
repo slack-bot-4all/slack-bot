@@ -6,10 +6,13 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
+	"github.com/slack-bot-4all/slack-bot/docs"
 	"github.com/slack-bot-4all/slack-bot/src/config"
 	"github.com/slack-bot-4all/slack-bot/src/model"
 	"github.com/slack-bot-4all/slack-bot/src/repository"
 	"github.com/slack-bot-4all/slack-bot/src/resource"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 // ErrorMap : struct
@@ -67,7 +70,15 @@ func GetRoutes() *gin.Engine {
 
 	// v1 Group
 	v1 := r.Group("/v1")
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	v1.Use(authMiddleware.MiddlewareFunc())
+
+	docs.SwaggerInfo.Title = "Swagger Jeremias API"
+	docs.SwaggerInfo.Description = "This is a sample server."
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "petstore.swagger.io"
+	docs.SwaggerInfo.BasePath = "/v1"
 
 	// Users Group
 	// {
