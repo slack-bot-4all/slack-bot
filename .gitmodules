@@ -1,0 +1,6 @@
+[submodule "vendor/govendor"]
+	path = vendor/govendor
+	url = ../../kardianos/govendor
+[submodule "vendor/swag"]
+	path = vendor/swag
+	url = ../../swaggo/swag
