@@ -74,7 +74,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 90)
+			time.Sleep(time.Second * 10)
 		}
 	})
 	task.Running()
@@ -217,6 +217,7 @@ func (s *SlackListener) executeTasks() {
 		}
 
 		respAllStacks := rancherListener.GetStacks()
+
 		dataStack := gjson.Get(respAllStacks, "data")
 		dataStack.ForEach(func(key, value gjson.Result) bool {
 			if value.Get("name").String() == stackName {
@@ -262,23 +263,10 @@ func (s *SlackListener) executeTasks() {
 			var msg string
 			var envName string
 			for _, container := range containers {
-				for _, task := range tasks {
-
-					resp := rancherListener.GetAllEnvironmentsFromRancher()
-
-					data := gjson.Get(resp, "data")
-					data.ForEach(func(key, value gjson.Result) bool {
-						if value.Get("id").String() == task.RancherProjectID {
-							envName = value.Get("name").String()
-						}
-
-						return true
-					})
-					if container.State == "healthy" {
-						upContainers = append(upContainers, container)
-					} else {
-						downContainers = append(downContainers, container)
-					}
+				if container.State == "healthy" {
+					upContainers = append(upContainers, container)
+				} else {
+					downContainers = append(downContainers, container)
 				}
 
 				msg = fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
