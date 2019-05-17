@@ -69,15 +69,15 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 	log.Println("[INFO] BOT connection successful!")
 
-	// task := runner.Go(func(shouldStop runner.S) error {
-	// 	defer func() {}()
+	task := runner.Go(func(shouldStop runner.S) error {
+		defer func() {}()
 
-	// 	for {
-	// 		s.executeTasks()
-	// 		time.Sleep(time.Minute * 2)
-	// 	}
-	// })
-	// task.Running()
+		for {
+			s.executeTasks()
+			time.Sleep(time.Second * 90)
+		}
+	})
+	task.Running()
 
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
@@ -190,8 +190,9 @@ func (s *SlackListener) executeTasks() {
 	var serviceID string
 	var serviceState string
 	var containers []Container
-
+	var tasks []model.Task
 	tasks, err := service.ListTask()
+
 	if err != nil {
 		log.Println("[ERROR] Error on execute task check, no response from database")
 		return
@@ -216,7 +217,7 @@ func (s *SlackListener) executeTasks() {
 		}
 
 		respAllStacks := rancherListener.GetStacks()
-
+		log.Println(respAllStacks)
 		dataStack := gjson.Get(respAllStacks, "data")
 		dataStack.ForEach(func(key, value gjson.Result) bool {
 			if value.Get("name").String() == stackName {
@@ -238,6 +239,7 @@ func (s *SlackListener) executeTasks() {
 
 		if stackID == "" || serviceID == "" {
 			log.Println("Error! Check if you are passing correct argument, the correct is: @bot command stackName/serviceName")
+
 			return
 		}
 
@@ -247,7 +249,7 @@ func (s *SlackListener) executeTasks() {
 			var container Container
 			container.ID = value.Get("id").String()
 			container.Name = value.Get("name").String()
-			container.State = value.Get("healthState").String()
+			container.State = value.Get("state").String()
 
 			containers = append(containers, container)
 
@@ -259,17 +261,41 @@ func (s *SlackListener) executeTasks() {
 			var upContainers []Container
 
 			var msg string
-
+			var envName string
 			for _, container := range containers {
-				if container.State == "healthy" {
-					upContainers = append(upContainers, container)
-				} else {
-					downContainers = append(downContainers, container)
-				}
-				msg += fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
-			}
+				for _, task := range tasks {
 
-			s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the containers health, the service `%s/%s` actually is `%s` with `%d` up containers and `%d` down containers\n\n%s", stackName, serviceName, serviceState, len(upContainers), len(downContainers), msg), true))
+					resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+					data := gjson.Get(resp, "data")
+					data.ForEach(func(key, value gjson.Result) bool {
+						if value.Get("id").String() == task.RancherProjectID {
+							envName = value.Get("name").String()
+						}
+
+						return true
+					})
+					if container.State == "healthy" {
+						upContainers = append(upContainers, container)
+					} else {
+						downContainers = append(downContainers, container)
+					}
+				}
+
+				msg = fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
+
+			}
+			resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+			data := gjson.Get(resp, "data")
+			data.ForEach(func(key, value gjson.Result) bool {
+				if value.Get("id").String() == task.RancherProjectID {
+					envName = value.Get("name").String()
+				}
+
+				return true
+			})
+			s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the containers health, the service `%s/%s` in Environment `%s` actually is `%s` with `%d` up containers and `%d` down containers\n\n%s", stackName, serviceName, envName, serviceState, len(upContainers), len(downContainers), msg), true))
 		}
 	}
 }
