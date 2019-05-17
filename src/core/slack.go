@@ -74,11 +74,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 		for {
 			s.executeTasks()
-<<<<<<< HEAD
 			time.Sleep(time.Second * 90)
-=======
-			time.Sleep(time.Minute * 2)
->>>>>>> e969f8e3810bcac552258ef8a9a812e402668dbf
 		}
 	})
 	task.Running()
@@ -221,7 +217,6 @@ func (s *SlackListener) executeTasks() {
 		}
 
 		respAllStacks := rancherListener.GetStacks()
-		log.Println(respAllStacks)
 		dataStack := gjson.Get(respAllStacks, "data")
 		dataStack.ForEach(func(key, value gjson.Result) bool {
 			if value.Get("name").String() == stackName {
