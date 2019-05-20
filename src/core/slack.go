@@ -199,6 +199,8 @@ func (s *SlackListener) executeTasks() {
 	}
 
 	for _, task := range tasks {
+		containers = []Container{}
+
 		rancherListener := &RancherListener{
 			baseURL:   task.RancherURL,
 			accessKey: task.RancherAccessKey,
@@ -269,7 +271,7 @@ func (s *SlackListener) executeTasks() {
 					downContainers = append(downContainers, container)
 				}
 
-				msg = fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
+				msg += fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
 
 			}
 			resp := rancherListener.GetAllEnvironmentsFromRancher()
