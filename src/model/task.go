@@ -11,6 +11,7 @@ type Task struct {
 	RancherAccessKey   string `json:"rancherAccessKey" gorm:"not null"`
 	RancherSecretKey   string `json:"rancherSecretKey" gorm:"not null"`
 	RancherProjectID   string `json:"rancherProjectId" gorm:"not null"`
+	IsOnlyCheck        bool   `json:"isOnlyCheck" gorm:"not null"`
 }
 
 // TableNane : setting the tablename on migrate
