@@ -394,7 +394,7 @@ func (s *SlackListener) executeTasks() {
 				var msg string
 				var envName string
 				for _, container := range containers {
-					if container.State == "healthy" {
+					if container.State == "running" {
 						upContainers = append(upContainers, container)
 					} else {
 						downContainers = append(downContainers, container)
