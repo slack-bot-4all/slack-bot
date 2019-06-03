@@ -70,25 +70,19 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 	log.Println("[INFO] BOT connection successful!")
 
-	task := runner.Go(func(shouldStop runner.S) error {
-		defer func() {}()
-
+	go func() {
 		for {
 			s.executeTasks()
 			time.Sleep(time.Second * 90)
 		}
-	})
-	task.Running()
+	}()
 
-	taskOnlyCheck := runner.Go(func(shouldStop runner.S) error {
-		defer func() {}()
-
+	go func() {
 		for {
 			s.executeOnlyCheckTasks()
 			time.Sleep(time.Hour * 1)
 		}
-	})
-	taskOnlyCheck.Running()
+	}()
 
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
