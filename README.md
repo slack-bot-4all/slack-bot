@@ -1,5 +1,5 @@
 [![GoDoc](https://godoc.org/github.com/slack-bot-4all/slack-bot?status.svg)](https://godoc.org/github.com/slack-bot-4all/slack-bot) 
-[![Go Report Card](https://goreportcard.com/badge/github.com/slack-bot-4all/slack-bot)](https://goreportcard.com/report/github.com/github.com/slack-bot-4all/slack-bot)
+[![Go Report Card](https://goreportcard.com/badge/github.com/slack-bot-4all/slack-bot)](https://goreportcard.com/report/github.com/slack-bot-4all/slack-bot)
 
 # Slack-bot for Rancher
 
