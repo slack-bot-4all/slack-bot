@@ -6,4 +6,4 @@ With it is possible to mention and delegate tasks such as: restart containers, h
 
 
 
-Check out our **wiki** to better understand how it works.
+Check out our [Wiki](https://github.com/slack-bot-4all/slack-bot/wiki/) to better understand how it works.
