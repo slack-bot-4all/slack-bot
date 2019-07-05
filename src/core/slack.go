@@ -116,7 +116,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	// Parando a função caso a mensagem não traga o prefixo mencionando o BOT
-	if !strings.HasPrefix(ev.Msg.Text, fmt.Sprintf("<@%s>", s.botID)) && !isReminder {
+	if !strings.Compare(ev.Msg.Text, fmt.Sprintf("<@%s>", s.botID)) == 0 && !isReminder {
 		return nil
 	}
 
@@ -139,50 +139,56 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	// Fazendo as verificações de mensagens e jogando
 	// para as devidas funções
-	if strings.HasPrefix(message, restartContainer) {
+	if strings.compare(message, restartContainer) == 0 {
 		s.slackRestartContainer(ev)
-	} else if strings.HasPrefix(message, logsContainer) {
+	} else if strings.compare(message, logsContainer) == 0 {
 		s.slackLogsContainer(ev)
-	} else if strings.HasPrefix(message, canaryUpdate) {
+	} else if strings.compare(message, canaryUpdate) == 0 {
 		s.slackUpdateCanary(ev)
-	} else if strings.HasPrefix(message, haproxyList) {
+	} else if strings.compare(message, haproxyList) == 0 {
 		s.slackListLoadBalancers(ev)
-	} else if strings.HasPrefix(message, getServiceInfo) {
+	} else if strings.compare(message, getServiceInfo) == 0 {
 		s.slackServiceInfo(ev)
-	} else if strings.HasPrefix(message, listService) {
+	} else if strings.compare(message, listService) == 0 {
 		s.slackServicesList(ev)
-	} else if strings.HasPrefix(message, upgradeService) {
+	} else if strings.compare(message, upgradeService) == 0 {
 		s.slackServiceUpgrade(ev)
-	} else if strings.HasPrefix(message, canaryDisable) {
+	} else if strings.compare(message, canaryDisable) == 0 {
 		s.slackCanaryDisable(ev)
-	} else if strings.HasPrefix(message, canaryActivate) {
+	} else if strings.compare(message, canaryActivate) == 0 {
 		s.slackCanaryEnable(ev)
-	} else if strings.HasPrefix(message, canaryInfo) {
+	} else if strings.compare(message, canaryInfo) == 0 {
 		s.slackCanaryInfo(ev)
-	} else if strings.HasPrefix(message, startService) {
+	} else if strings.compare(message, startService) == 0 {
 		s.slackStartService(ev)
-	} else if strings.HasPrefix(message, stopService) {
+	} else if strings.compare(message, stopService) == 0 {
 		s.slackStopService(ev)
-	} else if strings.HasPrefix(message, checkServiceHealth) {
+	} else if strings.compare(message, checkServiceHealth) == 0 {
 		s.slackCheckServiceHealth(ev)
-	} else if strings.HasPrefix(message, removeServiceCheck) {
+	} else if strings.compare(message, removeServiceCheck) == 0 {
 		s.stopServiceCheck(ev)
-	} else if strings.HasPrefix(message, listAllRunningTasks) {
+	} else if strings.compare(message, listAllRunningTasks) == 0 {
 		s.listAllRunningTasks(ev)
-	} else if strings.HasPrefix(message, selectRancher) {
+	} else if strings.compare(message, selectRancher) == 0 {
 		s.selectRancher(ev)
-	} else if strings.HasPrefix(message, listAllEnvironments) {
+	} else if strings.compare(message, listAllEnvironments) == 0 {
 		s.listAllEnvironments(ev)
-	} else if strings.HasPrefix(message, listRancher) {
+	} else if strings.compare(message, listRancher) == 0 {
 		s.listAllRanchers(ev)
-	} else if strings.HasPrefix(message, selectEnvironment) {
+	} else if strings.compare(message, selectEnvironment) == 0 {
 		s.selectEnvironment(ev)
+<<<<<<< HEAD
+	} else if strings.compare(message, canaryUpTen) == 0 {
+=======
 	} else if strings.HasPrefix(message, statusService) {
 		s.serviceCheck(ev)
 	} else if strings.HasPrefix(message, commands) {
 		s.slackHelper(ev)
 	} else if strings.HasPrefix(message, canaryUpTen) {
+>>>>>>> upstream/master
 		s.slackCanaryUpTen(ev)
+	} else if strings.compare(message, commands) == 0 {
+		s.slackHelper(ev)
 	} else {
 		s.interactiveMessage(ev)
 	}
@@ -689,7 +695,7 @@ func (s *SlackListener) slackServiceUpgrade(ev *slack.MessageEvent) {
 	serviceID := args[2]
 	newServiceImage := args[3]
 
-	if !strings.HasPrefix(newServiceImage, "docker:") {
+	if !strings.compare(newServiceImage, "docker:") == 0 {
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Image name needs to start with 'docker:'. Ex.: docker:ubuntu:14.04", false))
 		return
 	}
