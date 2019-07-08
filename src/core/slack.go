@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cayohollanda/runner"
+	"github.com/slack-bot-4all/slack-bot/src/config"
 	"github.com/slack-bot-4all/slack-bot/src/model"
 	"github.com/slack-bot-4all/slack-bot/src/repository"
 	"github.com/slack-bot-4all/slack-bot/src/service"
@@ -73,7 +74,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	go func() {
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 90)
+			time.Sleep(time.Second * 10)
 		}
 	}()
 
@@ -305,7 +306,7 @@ func (s *SlackListener) executeOnlyCheckTasks() {
 	}
 }
 
-func (s *SlackListener) executeTasks() {
+func (s *SlackListener) executeTasks() error {
 	var stackName string
 	var serviceName string
 	var stackID string
@@ -317,7 +318,7 @@ func (s *SlackListener) executeTasks() {
 
 	if err != nil {
 		log.Println("[ERROR] Error on execute task check, no response from database")
-		return
+		return err
 	}
 
 	for _, task := range tasks {
@@ -338,7 +339,7 @@ func (s *SlackListener) executeTasks() {
 				serviceName = argSplitted[1]
 			} else {
 				log.Println("Error! service name is not declared right. Right declaration example: stackName/serviceName")
-				return
+				return err
 			}
 
 			respAllStacks := rancherListener.GetStacks()
@@ -365,7 +366,7 @@ func (s *SlackListener) executeTasks() {
 			if stackID == "" || serviceID == "" {
 				log.Println("Error! Check if you are passing correct argument, the correct is: @bot command stackName/serviceName")
 
-				return
+				return err
 			}
 
 			respAllInstances := rancherListener.GetInstances(serviceID)
@@ -382,20 +383,52 @@ func (s *SlackListener) executeTasks() {
 			})
 
 			if serviceState != "healthy" {
-				var downContainers []Container
 				var upContainers []Container
 
-				var msg string
 				var envName string
+
+				var counters []model.ContainerCount
+				if err := config.DB.Find(&counters).Error; err != nil {
+					return err
+				}
+
 				for _, container := range containers {
 					if container.State == "running" {
 						upContainers = append(upContainers, container)
+						for _, counter := range counters {
+							if counter.ContainerID == container.ID {
+								log.Printf("COUNT %d", counter.Count)
+								if counter.Count != 0 {
+									counter.Count = 0
+									if err := repository.ChangeToZeroCounter(counter); err != nil {
+										return err
+									}
+								}
+							}
+						}
 					} else {
-						downContainers = append(downContainers, container)
+						var counterByContainerID model.ContainerCount
+						err := repository.GetCounterByContainerID(&counterByContainerID, container.ID)
+						if err != nil {
+							return err
+						}
+
+						if counterByContainerID.Count >= 2 {
+							s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceState), true))
+							return nil
+						}
+
+						err = repository.IncrementCounterByContainerID(container.ID)
+						if err != nil {
+							return err
+						}
+
+						log.Println(task.IsRestartEnabled)
+
+						if task.IsRestartEnabled {
+							rancherListener.RestartContainer(container.ID)
+						}
 					}
-
-					msg += fmt.Sprintf("`%s` - `%s`\n", container.Name, container.State)
-
 				}
 				resp := rancherListener.GetAllEnvironmentsFromRancher()
 
@@ -407,10 +440,32 @@ func (s *SlackListener) executeTasks() {
 
 					return true
 				})
-				s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the containers health, the service `%s/%s` in Environment `%s` actually is `%s` with `%d` up containers and `%d` down containers\n\n%s", stackName, serviceName, envName, serviceState, len(upContainers), len(downContainers), msg), true))
+				s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceState), true))
+			} else {
+				var counters []model.ContainerCount
+				if err := config.DB.Find(&counters).Error; err != nil {
+					return err
+				}
+
+				for _, container := range containers {
+					if container.State == "running" {
+						for _, counter := range counters {
+							if counter.ContainerID == container.ID {
+								if counter.Count != 0 {
+									counter.Count = 0
+									if err := repository.ChangeToZeroCounter(counter); err != nil {
+										return err
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
+
+	return nil
 }
 
 func (s *SlackListener) listAllRanchers(ev *slack.MessageEvent) {
@@ -577,7 +632,7 @@ func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
 
 func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
-	if len(args) == 4 {
+	if len(args) == 5 {
 		task := &model.Task{
 			Service:            args[2],
 			ChannelToSendAlert: args[3],
@@ -585,6 +640,12 @@ func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 			RancherAccessKey:   rancherListener.accessKey,
 			RancherSecretKey:   rancherListener.secretKey,
 			RancherProjectID:   rancherListener.projectID,
+		}
+
+		if args[4] == "true" {
+			task.IsRestartEnabled = true
+		} else {
+			task.IsRestartEnabled = false
 		}
 
 		err := service.AddTask(task)
