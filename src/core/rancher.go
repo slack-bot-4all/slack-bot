@@ -31,10 +31,11 @@ type RancherListener struct {
 
 // Container é uma estrutura que é usada para mostrar informações ao usuário
 type Container struct {
-	ID        string `json:"id"`
-	ImageUUID string `json:"imageUuid"`
-	Name      string `json:"name"`
-	State     string `json:"state"`
+	ID          string `json:"id"`
+	ImageUUID   string `json:"imageUuid"`
+	Name        string `json:"name"`
+	State       string `json:"state"`
+	HealthState string `json:"healthState"`
 }
 
 // LoadBalancer é a estrutura que tem como objetivo representar um LoadBalancer do Rancher

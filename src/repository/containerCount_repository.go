@@ -15,6 +15,24 @@ func ChangeToZeroCounter(counter model.ContainerCount) error {
 	return nil
 }
 
+// CreateCounterToContainer ::
+func CreateCounterToContainer(counter *model.ContainerCount) error {
+	if err := config.DB.Create(counter).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CreateCounterToService ::
+func CreateCounterToService(counter *model.ContainerCount) error {
+	if err := config.DB.Create(counter).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetCounterByContainerID ::
 func GetCounterByContainerID(counter *model.ContainerCount, containerID string) error {
 

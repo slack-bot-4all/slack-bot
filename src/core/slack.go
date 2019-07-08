@@ -219,7 +219,7 @@ func (s *SlackListener) executeOnlyCheckTasks() {
 	var serviceName string
 	var stackID string
 	var serviceID string
-	var serviceState string
+	var serviceHealthState string
 	var containers []Container
 	var tasks []model.Task
 	tasks, err := service.ListTask()
@@ -264,7 +264,7 @@ func (s *SlackListener) executeOnlyCheckTasks() {
 			dataService.ForEach(func(key, value gjson.Result) bool {
 				if value.Get("name").String() == serviceName {
 					serviceID = value.Get("id").String()
-					serviceState = value.Get("healthState").String()
+					serviceHealthState = value.Get("healthState").String()
 				}
 				return true
 			})
@@ -301,7 +301,7 @@ func (s *SlackListener) executeOnlyCheckTasks() {
 				return true
 			})
 
-			s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("The service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceState), true))
+			s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("The service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 		}
 	}
 }
@@ -312,6 +312,7 @@ func (s *SlackListener) executeTasks() error {
 	var stackID string
 	var serviceID string
 	var serviceState string
+	var serviceHealthState string
 	var containers []Container
 	var tasks []model.Task
 	tasks, err := service.ListTask()
@@ -358,7 +359,8 @@ func (s *SlackListener) executeTasks() error {
 			dataService.ForEach(func(key, value gjson.Result) bool {
 				if value.Get("name").String() == serviceName {
 					serviceID = value.Get("id").String()
-					serviceState = value.Get("healthState").String()
+					serviceHealthState = value.Get("healthState").String()
+					serviceState = value.Get("state").String()
 				}
 				return true
 			})
@@ -376,13 +378,42 @@ func (s *SlackListener) executeTasks() error {
 				container.ID = value.Get("id").String()
 				container.Name = value.Get("name").String()
 				container.State = value.Get("state").String()
+				container.HealthState = value.Get("healthState").String()
 
 				containers = append(containers, container)
 
 				return true
 			})
 
-			if serviceState != "healthy" {
+			if serviceHealthState != "healthy" {
+				// criando counter de serviço
+				var findCounterService model.ContainerCount
+				if err := repository.GetCounterByContainerID(&findCounterService, serviceID); err != nil {
+					if err.Error() == "record not found" {
+						if err := repository.CreateCounterToService(&model.ContainerCount{
+							ContainerID: serviceID,
+							Count:       0,
+							IsService:   true,
+							ServiceName: serviceName,
+							StackName:   stackName,
+						}); err != nil {
+							return err
+						}
+
+						return err
+					}
+
+					return err
+				}
+
+				if err := repository.GetCounterByContainerID(&findCounterService, serviceID); err != nil {
+					return err
+				}
+
+				if err := repository.IncrementCounterByContainerID(findCounterService.ContainerID); err != nil {
+					return err
+				}
+
 				var upContainers []Container
 
 				var envName string
@@ -393,11 +424,10 @@ func (s *SlackListener) executeTasks() error {
 				}
 
 				for _, container := range containers {
-					if container.State == "running" {
+					if container.State == "running" && container.HealthState != "unhealthy" {
 						upContainers = append(upContainers, container)
 						for _, counter := range counters {
 							if counter.ContainerID == container.ID {
-								log.Printf("COUNT %d", counter.Count)
 								if counter.Count != 0 {
 									counter.Count = 0
 									if err := repository.ChangeToZeroCounter(counter); err != nil {
@@ -410,12 +440,36 @@ func (s *SlackListener) executeTasks() error {
 						var counterByContainerID model.ContainerCount
 						err := repository.GetCounterByContainerID(&counterByContainerID, container.ID)
 						if err != nil {
+							if err.Error() == "record not found" {
+								repository.CreateCounterToContainer(&model.ContainerCount{
+									ContainerID: container.ID,
+									Count:       0,
+								})
+							}
+							err := repository.GetCounterByContainerID(&counterByContainerID, container.ID)
+							if err != nil {
+								return err
+							}
+
 							return err
 						}
 
 						if counterByContainerID.Count >= 2 {
-							s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceState), true))
-							return nil
+							if serviceState != "inactive" && container.State != "stopped" {
+								resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+								data := gjson.Get(resp, "data")
+								data.ForEach(func(key, value gjson.Result) bool {
+									if value.Get("id").String() == task.RancherProjectID {
+										envName = value.Get("name").String()
+									}
+
+									return true
+								})
+
+								s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
+								return nil
+							}
 						}
 
 						err = repository.IncrementCounterByContainerID(container.ID)
@@ -430,26 +484,34 @@ func (s *SlackListener) executeTasks() error {
 						}
 					}
 				}
-				resp := rancherListener.GetAllEnvironmentsFromRancher()
 
-				data := gjson.Get(resp, "data")
-				data.ForEach(func(key, value gjson.Result) bool {
-					if value.Get("id").String() == task.RancherProjectID {
-						envName = value.Get("name").String()
-					}
-
-					return true
-				})
-				s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceState), true))
+				// if serviceState != "inactive" && container != "stopped" {
+				// 	s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
+				// }
 			} else {
+				var findCounterService model.ContainerCount
+				if err := repository.GetCounterByContainerID(&findCounterService, serviceID); err != nil {
+					return err
+				}
+
+				if findCounterService.Count > 0 {
+					s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("The service `%s/%s` is back! Actually is `%s`", stackName, serviceName, serviceHealthState), true))
+				}
+
+				// TODO: faltando zerar count do serviço após alertar (dando erro)
+				if err := repository.ChangeToZeroCounter(findCounterService); err != nil {
+					return err
+				}
+
 				var counters []model.ContainerCount
 				if err := config.DB.Find(&counters).Error; err != nil {
 					return err
 				}
 
 				for _, container := range containers {
-					if container.State == "running" {
+					if container.State == "running" && container.HealthState != "unhealthy" {
 						for _, counter := range counters {
+							log.Printf("counter.ContainerID: %s / container.ID: %s", counter.ContainerID, container.ID)
 							if counter.ContainerID == container.ID {
 								if counter.Count != 0 {
 									counter.Count = 0

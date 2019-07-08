@@ -7,6 +7,9 @@ type ContainerCount struct {
 	gorm.Model
 	ContainerID string `json:"jsonId" gorm:"unique;not null;type:varchar(50)"`
 	Count       uint   `json:"count" gorm:"not null"`
+	IsService   bool   `json:"isService" gorm:"not null"`
+	ServiceName string `json:"serviceName" gorm:"not null"`
+	StackName   string `json:"stackName" gorm:"not null"`
 }
 
 // TableName : setting the tablename on migrate
