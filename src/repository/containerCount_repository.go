@@ -6,7 +6,8 @@ import (
 )
 
 // ChangeToZeroCounter ::
-func ChangeToZeroCounter(counter model.ContainerCount) error {
+func ChangeToZeroCounter(counter *model.ContainerCount) error {
+	counter.Count = 0
 
 	if err := config.DB.Save(counter).Error; err != nil {
 		return err

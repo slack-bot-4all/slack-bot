@@ -430,7 +430,7 @@ func (s *SlackListener) executeTasks() error {
 							if counter.ContainerID == container.ID {
 								if counter.Count != 0 {
 									counter.Count = 0
-									if err := repository.ChangeToZeroCounter(counter); err != nil {
+									if err := repository.ChangeToZeroCounter(&counter); err != nil {
 										return err
 									}
 								}
@@ -455,7 +455,7 @@ func (s *SlackListener) executeTasks() error {
 						}
 
 						if counterByContainerID.Count >= 2 {
-							if serviceState != "inactive" && container.State != "stopped" {
+							if serviceState != "inactive" {
 								resp := rancherListener.GetAllEnvironmentsFromRancher()
 
 								data := gjson.Get(resp, "data")
@@ -470,14 +470,14 @@ func (s *SlackListener) executeTasks() error {
 								s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 								return nil
 							}
+
+							return nil
 						}
 
 						err = repository.IncrementCounterByContainerID(container.ID)
 						if err != nil {
 							return err
 						}
-
-						log.Println(task.IsRestartEnabled)
 
 						if task.IsRestartEnabled {
 							rancherListener.RestartContainer(container.ID)
@@ -499,7 +499,8 @@ func (s *SlackListener) executeTasks() error {
 				}
 
 				// TODO: faltando zerar count do serviço após alertar (dando erro)
-				if err := repository.ChangeToZeroCounter(findCounterService); err != nil {
+				if err := repository.ChangeToZeroCounter(&findCounterService); err != nil {
+					log.Printf("%s", err.Error())
 					return err
 				}
 
@@ -515,7 +516,7 @@ func (s *SlackListener) executeTasks() error {
 							if counter.ContainerID == container.ID {
 								if counter.Count != 0 {
 									counter.Count = 0
-									if err := repository.ChangeToZeroCounter(counter); err != nil {
+									if err := repository.ChangeToZeroCounter(&counter); err != nil {
 										return err
 									}
 								}
