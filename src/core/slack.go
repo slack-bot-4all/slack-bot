@@ -684,18 +684,37 @@ func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
 		}
 
 		if taskIDToStop != "all" {
-			var taskToStop model.Task
-			for _, task := range tasks {
-				if fmt.Sprintf("%d", task.ID) == taskIDToStop {
-					taskToStop = task
+			if strings.Contains(taskIDToStop, ",") {
+				ids := strings.Split(taskIDToStop, ",")
+
+				for _, id := range ids {
+					for _, task := range tasks {
+						if fmt.Sprintf("%d", task.ID) == id {
+							err = service.DeleteTask(task)
+							if err != nil {
+								s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Failed to stop task `%d`", task.ID), false))
+								return
+							}
+						}
+					}
 				}
+
+				s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Tasks with ID's: %s are stopped!", ids), false))
+			} else {
+				var taskToStop model.Task
+				for _, task := range tasks {
+					if fmt.Sprintf("%d", task.ID) == taskIDToStop {
+						taskToStop = task
+					}
+				}
+				err = service.DeleteTask(taskToStop)
+				if err != nil {
+					s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Failed to stop task `%s`", taskIDToStop), false))
+					return
+				}
+				s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Task *%s*/`%s` stopped successfully!", taskIDToStop, taskToStop.Service), false))
 			}
-			err = service.DeleteTask(taskToStop)
-			if err != nil {
-				s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Failed to stop task `%s`", taskIDToStop), false))
-				return
-			}
-			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Task *%s*/`%s` stopped successfully!", taskIDToStop, taskToStop.Service), false))
+
 		}
 	}
 }
