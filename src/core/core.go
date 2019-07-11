@@ -157,7 +157,7 @@ func initializeDB() error {
 
 	log.Println("[INFO] Connected to database")
 
-	config.DB.AutoMigrate(&model.Rancher{}, &model.User{}, &model.Task{})
+	config.DB.AutoMigrate(&model.Rancher{}, &model.User{}, &model.Task{}, &model.ContainerCount{})
 
 	adminUser := model.User{
 		Username: "admin",
