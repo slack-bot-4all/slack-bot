@@ -74,7 +74,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	go func() {
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 90)
+			time.Sleep(time.Second * 10)
 		}
 	}()
 
@@ -424,7 +424,7 @@ func (s *SlackListener) executeTasks() error {
 				}
 
 				for _, container := range containers {
-					if container.State == "running" && container.HealthState != "unhealthy" {
+					if container.State == "running" && container.HealthState != "unhealthy" || (container.State == "stopped") {
 						upContainers = append(upContainers, container)
 						for _, counter := range counters {
 							if counter.ContainerID == container.ID {
@@ -695,6 +695,27 @@ func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
 
 func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) == 4 {
+		task := &model.Task{
+			Service:            args[2],
+			ChannelToSendAlert: args[3],
+			RancherURL:         rancherListener.baseURL,
+			RancherAccessKey:   rancherListener.accessKey,
+			RancherSecretKey:   rancherListener.secretKey,
+			RancherProjectID:   rancherListener.projectID,
+		}
+
+		task.IsRestartEnabled = false
+
+		err := service.AddTask(task)
+		if err != nil {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Error on register task, verify if BOT haves connection with database", false))
+		} else {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Task added successfully!", false))
+		}
+	}
+
 	if len(args) == 5 {
 		task := &model.Task{
 			Service:            args[2],
