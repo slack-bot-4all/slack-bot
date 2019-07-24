@@ -74,7 +74,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	go func() {
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 90)
+			time.Sleep(time.Second * 5)
 		}
 	}()
 
@@ -385,7 +385,7 @@ func (s *SlackListener) executeTasks() error {
 				return true
 			})
 
-			if serviceHealthState != "healthy" {
+			if serviceHealthState != "healthy" && serviceHealthState != "inactive" && serviceHealthState != "initializing" {
 				// criando counter de serviço
 				var findCounterService model.ContainerCount
 				if err := repository.GetCounterByContainerID(&findCounterService, serviceID); err != nil {
@@ -467,7 +467,7 @@ func (s *SlackListener) executeTasks() error {
 									return true
 								})
 
-								s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
+								// s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 								return nil
 							}
 
@@ -480,8 +480,14 @@ func (s *SlackListener) executeTasks() error {
 						}
 
 						if task.IsRestartEnabled {
-							rancherListener.RestartContainer(container.ID)
+							if counterByContainerID.Count == 1 {
+								rancherListener.DeleteContainer(container.ID)
+							} else {
+								rancherListener.RestartContainer(container.ID)
+							}
 						}
+
+						s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 					}
 				}
 
@@ -498,7 +504,6 @@ func (s *SlackListener) executeTasks() error {
 					s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("The service `%s/%s` is back! Actually is `%s`", stackName, serviceName, serviceHealthState), true))
 				}
 
-				// TODO: faltando zerar count do serviço após alertar (dando erro)
 				if err := repository.ChangeToZeroCounter(&findCounterService); err != nil {
 					log.Printf("%s", err.Error())
 					return err

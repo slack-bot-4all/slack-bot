@@ -106,6 +106,7 @@ func Authenticator(c *gin.Context) (interface{}, error) {
 	}
 
 	password := userLogin.Password
+	log.Printf("User: %s / Pass: %s", userLogin.Username, userLogin.Password)
 	if err := repository.FindUserByUsername(&userLogin); err != nil {
 		return nil, jwt.ErrFailedAuthentication
 	} else {
