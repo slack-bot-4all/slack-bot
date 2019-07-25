@@ -88,6 +88,8 @@ func (ranchListener * RancherListener) DeleteContainer(ID string) string {
 	url := fmt.Sprintf("%s/v2-beta/projects/%s/containers/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, DeleteHTTP, "")
 
+	log.Printf("Container deleted! ID: %s\n", ID)
+
 	return resp
 }
 
