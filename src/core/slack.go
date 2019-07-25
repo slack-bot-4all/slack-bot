@@ -74,7 +74,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	go func() {
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 90)
+			time.Sleep(time.Second * 5)
 		}
 	}()
 
@@ -385,8 +385,7 @@ func (s *SlackListener) executeTasks() error {
 				return true
 			})
 
-			if serviceHealthState != "healthy" {
-				// criando counter de serviço
+			if serviceHealthState != "healthy" && serviceHealthState != "inactive" && serviceHealthState != "initializing" {
 				var findCounterService model.ContainerCount
 				if err := repository.GetCounterByContainerID(&findCounterService, serviceID); err != nil {
 					if err.Error() == "record not found" {
@@ -424,7 +423,7 @@ func (s *SlackListener) executeTasks() error {
 				}
 
 				for _, container := range containers {
-					if container.State == "running" && container.HealthState != "unhealthy" || (container.State == "stopped") {
+					if container.State == "running" && container.HealthState != "unhealthy" || (container.State == "stopped" && container.HealthState != "unhealthy") {
 						upContainers = append(upContainers, container)
 						for _, counter := range counters {
 							if counter.ContainerID == container.ID {
@@ -467,7 +466,7 @@ func (s *SlackListener) executeTasks() error {
 									return true
 								})
 
-								s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
+								// s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 								return nil
 							}
 
@@ -479,26 +478,33 @@ func (s *SlackListener) executeTasks() error {
 							return err
 						}
 
+						log.Println(task.IsRestartEnabled)
 						if task.IsRestartEnabled {
-							rancherListener.RestartContainer(container.ID)
+							if counterByContainerID.Count == 1 {
+								rancherListener.DeleteContainer(container.ID)
+							} else {
+								rancherListener.RestartContainer(container.ID)
+							}
 						}
+
+						s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 					}
 				}
 
 				// if serviceState != "inactive" && container != "stopped" {
 				// 	s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 				// }
+				s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 			} else {
 				var findCounterService model.ContainerCount
 				if err := repository.GetCounterByContainerID(&findCounterService, serviceID); err != nil {
 					return err
 				}
 
-				if findCounterService.Count > 0 {
+				if findCounterService.Count > 1 {
 					s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("The service `%s/%s` is back! Actually is `%s`", stackName, serviceName, serviceHealthState), true))
 				}
 
-				// TODO: faltando zerar count do serviço após alertar (dando erro)
 				if err := repository.ChangeToZeroCounter(&findCounterService); err != nil {
 					log.Printf("%s", err.Error())
 					return err

@@ -17,6 +17,9 @@ const (
 
 	// PutHTTP é a constante usada para requisições de verbo PUT
 	PutHTTP = "PUT"
+
+	// DeleteHTTP é a constante usada para requisições de verbo DELETE
+	DeleteHTTP = "DELETE"
 )
 
 // CreateHTTPClient é a função responsável por retornar um client para que possam ser
@@ -51,6 +54,8 @@ func (rancherListener *RancherListener) HTTPSendRancherRequest(url string, metho
 		req, err = http.NewRequest(method, url, payload)
 	case "PUT":
 		req, err = http.NewRequest(method, url, payload)
+	case "DELETE":
+		req, err = http.NewRequest(method, url, nil)
 	default:
 		log.Println("[INFO] Not possible create request, method not found.")
 	}

@@ -84,6 +84,15 @@ func (ranchListener *RancherListener) ListContainers() string {
 	return resp
 }
 
+func (ranchListener * RancherListener) DeleteContainer(ID string) string {
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/containers/%s", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, DeleteHTTP, "")
+
+	log.Printf("Container deleted! ID: %s\n", ID)
+
+	return resp
+}
+
 // GetInstances é uma função que retornará uma lista de todas as instâncias de um serviço
 func (ranchListener *RancherListener) GetInstances(serviceID string) string {
 	url := fmt.Sprintf("%s/v2-beta/projects/%s/services/%s/instances", ranchListener.baseURL, ranchListener.projectID, serviceID)
