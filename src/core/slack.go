@@ -74,7 +74,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	go func() {
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 90)
 		}
 	}()
 
@@ -487,6 +487,17 @@ func (s *SlackListener) executeTasks() error {
 							}
 						}
 
+						resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+						data := gjson.Get(resp, "data")
+						data.ForEach(func(key, value gjson.Result) bool {
+							if value.Get("id").String() == task.RancherProjectID {
+								envName = value.Get("name").String()
+							}
+
+							return true
+						})
+
 						s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 					}
 				}
@@ -494,6 +505,18 @@ func (s *SlackListener) executeTasks() error {
 				// if serviceState != "inactive" && container != "stopped" {
 				// 	s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 				// }
+
+				resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+				data := gjson.Get(resp, "data")
+				data.ForEach(func(key, value gjson.Result) bool {
+					if value.Get("id").String() == task.RancherProjectID {
+						envName = value.Get("name").String()
+					}
+
+					return true
+				})
+
 				s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 			} else {
 				var findCounterService model.ContainerCount
