@@ -39,6 +39,12 @@
 			"revisionTime": "2019-04-24T11:10:38Z"
 		},
 		{
+			"checksumSHA1": "8Thtf1Bq8BIxCNIs+78QfqQ50Nw=",
+			"path": "github.com/cayohollanda/go_splunk",
+			"revision": "422ab6ceef8f1c70526919ef6754885e543b2165",
+			"revisionTime": "2019-04-26T12:24:47Z"
+		},
+		{
 			"checksumSHA1": "Eemb98UlyPeXlAdJgkM9xV/pIKo=",
 			"path": "github.com/cayohollanda/runner",
 			"revision": "e9da83808c0cf4ffc6ee43c87bd84d7b90854cee",
@@ -859,6 +865,12 @@
 			"path": "golang.org/x/tools/go/packages",
 			"revision": "8ce1ff423c5a009e3707a030b69ea3f1b622a1ce",
 			"revisionTime": "2019-05-13T06:20:51Z"
+		},
+		{
+			"checksumSHA1": "3MMloGEeOp5DSWVD80vbdIekTSo=",
+			"path": "golang.org/x/tools/go/vcs",
+			"revision": "0b5a7f81db506d65ef355dcd89d4fba30f623e99",
+			"revisionTime": "2019-07-15T16:59:09Z"
 		},
 		{
 			"checksumSHA1": "NH/C33NiV+zjh6fycw7+kKCs6D0=",
