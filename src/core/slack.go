@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"log"
 	"net/http"
 	"strconv"
@@ -53,6 +54,7 @@ type SlackListener struct {
 	client    *slack.Client
 	botID     string
 	channelID string
+	statusCakeChannelID string
 }
 
 var (
@@ -99,7 +101,75 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	// Parando a função caso a msg não venha do mesmo canal que o BOT está
-	if ev.Channel != s.channelID {
+	if (ev.Channel != s.channelID) && (ev.Channel != s.statusCakeChannelID) {
+		return nil
+	}
+
+	if ev.Channel == s.statusCakeChannelID {
+		if strings.Contains(ev.Msg.Text, "Your site went down!") && strings.Contains(ev.Msg.Text, "Code:") && strings.Contains(ev.Msg.Text, "Reason:") {
+			lifeSaveSplit := strings.Split(ev.Msg.Text, "LifeSave")
+			if len(lifeSaveSplit) == 2 {
+				patternAndBaseSplit := strings.Split(lifeSaveSplit[0], " - ")
+				
+				spListener := SplunkListener{
+					Username: SplunkUsername,
+					Password: SplunkPassword,
+					APIURL: SplunkBaseURL,
+				}
+
+				result := spListener.ConnectSplunk(fmt.Sprintf("index%%3Dpier-logs%%20trace.base%%3D%s%%20trace.pattern%%3D%s%%20trace.resultStatus%%3D500%%20earliest%%3D-5m", patternAndBaseSplit[1], patternAndBaseSplit[0]))
+
+				fileNameTrace := fmt.Sprintf("trace-%s.json", patternAndBaseSplit[1])
+
+				if strings.Contains(result.Trace.StackTrace.Stack, "Read timed out") {
+					s.client.PostMessage(s.statusCakeChannelID, slack.MsgOptionText("Erro: Read timed out na base, favor acionar DBA.", false))
+					readTimedOutTrace := strings.Split(result.Trace.StackTrace.Stack, "Read timed out")[1]
+
+					w, err := os.Create(fileNameTrace)
+					if err != nil {
+						log.Printf("Erro ao criar arquivo de log: %s\n", err.Error())
+					}
+					defer w.Close()
+					
+					ioutil.WriteFile(fileNameTrace, []byte(readTimedOutTrace), 0644)
+
+					_, err = s.client.UploadFile(slack.FileUploadParameters{
+						File:     fileNameTrace,
+						Filename: fileNameTrace,
+						Filetype: "json",
+						Channels: []string{
+							s.statusCakeChannelID,
+						},
+					})
+					if err != nil {
+						log.Printf("Erro ao enviar arquivo ao Slack: %s\n", err.Error())
+					}
+
+					return nil
+				}
+
+				w, err := os.Create(fileNameTrace)
+				if err != nil {
+					log.Println(err)
+				}
+				defer w.Close()
+				
+				ioutil.WriteFile(fileNameTrace, []byte(result.Trace.StackTrace.Stack), 0644)
+
+				_, err = s.client.UploadFile(slack.FileUploadParameters{
+					File:     fileNameTrace,
+					Filename: fileNameTrace,
+					Filetype: "json",
+					Channels: []string{
+						s.statusCakeChannelID,
+					},
+				})
+				if err != nil {
+					log.Println(err.Error())
+				}
+			}
+		}
+
 		return nil
 	}
 
