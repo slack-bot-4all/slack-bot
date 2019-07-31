@@ -90,9 +90,9 @@ func init() {
 	flag.StringVar(&DatabaseURL, "database_url", os.Getenv("DATABASE_URL"), "URL of db")
 	flag.StringVar(&DatabaseSchema, "database_schema", os.Getenv("DATABASE_SCHEMA"), "Schema of db")
 	flag.StringVar(&StatusCakeChannelID, "statuscake_channel_id", os.Getenv("STATUSCAKE_CHANNEL_ID"), "Schema of db")
-	flag.StringVar(&SplunkBaseURL, "splunk_base_url", os.Getenv("SPLUNK_BASE_URL"), "Schema of db")
-	flag.StringVar(&SplunkUsername, "splunk_username", os.Getenv("SPLUNK_USERNAME"), "Schema of db")
-	flag.StringVar(&SplunkPassword, "splunk_password", os.Getenv("SPLUNK_PASSWORD"), "Schema of db")
+	flag.StringVar(&SplunkBaseURL, "splunk_base_url", os.Getenv("SPLUNK_BASE_URL"), "Url of Splunk")
+	flag.StringVar(&SplunkUsername, "splunk_username", os.Getenv("SPLUNK_USERNAME"), "Username of Splunk")
+	flag.StringVar(&SplunkPassword, "splunk_password", os.Getenv("SPLUNK_PASSWORD"), "Password of Splunk")
 }
 
 // Start : start all proccesses

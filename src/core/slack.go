@@ -112,9 +112,9 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 				patternAndBaseSplit := strings.Split(lifeSaveSplit[0], " - ")
 				
 				spListener := SplunkListener{
-					APIURL: SplunkBaseURL,
 					Username: SplunkUsername,
 					Password: SplunkPassword,
+					APIURL: SplunkBaseURL,
 				}
 
 				result := spListener.ConnectSplunk(fmt.Sprintf("index%%3Dpier-logs%%20trace.base%%3D%s%%20trace.pattern%%3D%s%%20trace.resultStatus%%3D500%%20earliest%%3D-5m", patternAndBaseSplit[1], patternAndBaseSplit[0]))
@@ -127,7 +127,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 					w, err := os.Create(fileNameTrace)
 					if err != nil {
-						log.Println(err)
+						log.Printf("Erro ao criar arquivo de log: %s\n", err.Error())
 					}
 					defer w.Close()
 					
@@ -142,7 +142,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 						},
 					})
 					if err != nil {
-						log.Println(err.Error())
+						log.Printf("Erro ao enviar arquivo ao Slack: %s\n", err.Error())
 					}
 
 					return nil

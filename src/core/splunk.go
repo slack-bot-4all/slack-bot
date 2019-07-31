@@ -70,7 +70,7 @@ func (s *SplunkListener) ConnectSplunk(query string) ResultSearch {
 
 	searchResults, err := conn.GetSearchResults(query)
 	if err != nil {
-		log.Println("erro")
+		log.Println(err)
 	}
 
 	var rs ResultSearch
