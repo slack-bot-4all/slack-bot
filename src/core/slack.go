@@ -101,23 +101,30 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	// Parando a função caso a msg não venha do mesmo canal que o BOT está
+	log.Printf("%s / %s", ev.Channel, s.statusCakeChannelID)
 	if (ev.Channel != s.channelID) && (ev.Channel != s.statusCakeChannelID) {
 		return nil
 	}
 
+	// log.Printf("%s / %s", ev.Channel, s.statusCakeChannelID)
 	if ev.Channel == s.statusCakeChannelID {
-		if strings.Contains(ev.Msg.Text, "Your site went down!") && strings.Contains(ev.Msg.Text, "Code:") && strings.Contains(ev.Msg.Text, "Reason:") {
-			lifeSaveSplit := strings.Split(ev.Msg.Text, "LifeSave")
+		if strings.Contains(ev.Attachments[0].Text, "Your site went down!") && strings.Contains(ev.Attachments[0].Text, "Code:") && strings.Contains(ev.Attachments[0].Text, "Reason:") {
+			preSplit := strings.Replace(ev.Attachments[0].Title, "<", "", -1)
+			preSplit = strings.Replace(preSplit, ">", "", -1)
+			preSplit = strings.Replace(preSplit, "\\", "", -1)
+			preSplit = strings.Replace(preSplit, "(", "", -1)
+			preSplit = strings.Replace(preSplit, ")", "",  -1)
+			lifeSaveSplit := strings.Split(preSplit, "LifeSave")
 			if len(lifeSaveSplit) == 2 {
 				patternAndBaseSplit := strings.Split(lifeSaveSplit[0], " - ")
-				
+
 				spListener := SplunkListener{
 					Username: SplunkUsername,
 					Password: SplunkPassword,
 					APIURL: SplunkBaseURL,
 				}
 
-				result := spListener.ConnectSplunk(fmt.Sprintf("index%%3Dpier-logs%%20trace.base%%3D%s%%20trace.pattern%%3D%s%%20trace.resultStatus%%3D500%%20earliest%%3D-5m", patternAndBaseSplit[1], patternAndBaseSplit[0]))
+				result := spListener.ConnectSplunk(fmt.Sprintf("index%%3Dpier-logs%%20trace.base%%3D%s%%20trace.pattern%%3D%s%%20trace.resultStatus%%3D500%%20earliest%%3D-15m", patternAndBaseSplit[1], patternAndBaseSplit[0]))
 
 				fileNameTrace := fmt.Sprintf("trace-%s.json", patternAndBaseSplit[1])
 
