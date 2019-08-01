@@ -605,8 +605,20 @@ func (s *SlackListener) executeTasks() error {
 					return err
 				}
 
+				var envName string
+				resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+				data := gjson.Get(resp, "data")
+				data.ForEach(func(key, value gjson.Result) bool {
+					if value.Get("id").String() == task.RancherProjectID {
+						envName = value.Get("name").String()
+					}
+
+					return true
+				})
+
 				if findCounterService.Count > 1 {
-					s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("The service `%s/%s` is back! Actually is `%s`", stackName, serviceName, serviceHealthState), true))
+					s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("The service `%s/%s` of environment `%s` is back! Actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 				}
 
 				if err := repository.ChangeToZeroCounter(&findCounterService); err != nil {
