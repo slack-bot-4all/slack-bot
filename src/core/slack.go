@@ -76,7 +76,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	go func() {
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 90)
+			time.Sleep(time.Second * 10)
 		}
 	}()
 
@@ -559,7 +559,6 @@ func (s *SlackListener) executeTasks() error {
 							return err
 						}
 
-						log.Println(task.IsRestartEnabled)
 						if task.IsRestartEnabled {
 							if counterByContainerID.Count == 1 {
 								rancherListener.DeleteContainer(container.ID)
@@ -580,6 +579,19 @@ func (s *SlackListener) executeTasks() error {
 						})
 
 						s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
+
+						fileName := rancherListener.LogsContainer(container.ID)
+
+						time.Sleep(10 * time.Second)
+
+						_, err = s.client.UploadFile(slack.FileUploadParameters{
+							File:     fileName,
+							Filename: fileName,
+							Filetype: "text",
+							Channels: []string{
+								s.channelID,
+							},
+						})
 					}
 				}
 

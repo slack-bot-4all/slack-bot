@@ -174,11 +174,11 @@ func (ranchListener *RancherListener) ListServices() string {
 func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 	data := &url.Values{}
 	data.Add("follow", "true")
-	data.Add("lines", "50")
+	data.Add("lines", "1000")
 
 	url := fmt.Sprintf("%s/v2-beta/projects/%s/containers/%s?action=logs", ranchListener.baseURL, ranchListener.projectID, containerID)
 
-	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, `{"follow": true, "lines": 50}`)
+	resp := ranchListener.HTTPSendRancherRequest(url, PostHTTP, `{"follow": true, "lines": 1000}`)
 
 	tokenValue := gjson.Get(resp, "token").String()
 	urlValue := gjson.Get(resp, "url").String()
@@ -187,7 +187,7 @@ func (ranchListener *RancherListener) LogsContainer(containerID string) string {
 
 	t := time.Now()
 
-	f, err := os.Create(fmt.Sprintf("/tmp/logs-container-%d%d%d%02d%02d%02d.log", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second()))
+	f, err := os.Create(fmt.Sprintf("./logs-container-%d%d%d%02d%02d%02d.log", t.Day(), t.Month(), t.Year(), t.Hour(), t.Minute(), t.Second()))
 	CheckErr("Logs file creation error", err)
 
 	socketConnectionLogsContainer(urlAndToken, f.Name())
@@ -213,7 +213,6 @@ func socketConnectionLogsContainer(urlAndToken string, fileName string) {
 
 		OnError: func(err error) {
 			log.Printf("[ERROR] %s\n", err.Error())
-			os.Exit(1)
 		},
 	}
 
