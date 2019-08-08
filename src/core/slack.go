@@ -76,7 +76,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	go func() {
 		for {
 			s.executeTasks()
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Second * 90)
 		}
 	}()
 
