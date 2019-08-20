@@ -36,6 +36,7 @@ type Container struct {
 	Name        string `json:"name"`
 	State       string `json:"state"`
 	HealthState string `json:"healthState"`
+	HostID 		string `json:"hostId"`
 }
 
 // LoadBalancer é a estrutura que tem como objetivo representar um LoadBalancer do Rancher
@@ -114,6 +115,13 @@ func (ranchListener *RancherListener) GetService(ID string) string {
 // informações da stack de um serviço em específico
 func (ranchListener *RancherListener) GetServiceStack(ID string) string {
 	url := fmt.Sprintf("%s/v2-beta/projects/%s/services/%s/stack", ranchListener.baseURL, ranchListener.projectID, ID)
+	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
+
+	return resp
+}
+
+func (ranchListener *RancherListener) GetHostInfo(ID string) string {
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/hosts/%s", ranchListener.baseURL, ranchListener.projectID, ID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp

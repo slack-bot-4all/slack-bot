@@ -183,6 +183,14 @@ func CreateCommands() {
 	})
 
 	Commands = append(Commands, Command{
+		Cmd:         containerList,
+		Description: "Command to list containers",
+		Usage:       "@jeremias command",
+		Lint:        "Returns `host, ID and name of all containers`",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
 		Cmd:         commands,
 		Description: "Command responsible for displaying the commands that are available in BOT",
 		Usage:       "@jeremias command",

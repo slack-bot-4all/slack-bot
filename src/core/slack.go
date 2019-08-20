@@ -33,6 +33,7 @@ const (
 	haproxyList         = "lb-list"
 	logsContainer       = "container-logs"
 	restartContainer    = "container-restart"
+	containerList 		= "container-list"
 	getServiceInfo      = "service-info"
 	upgradeService      = "service-upgrade"
 	listService         = "service-list"
@@ -265,11 +266,40 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.slackHelper(ev)
 	} else if strings.HasPrefix(message, canaryUpTen) {
 		s.slackCanaryUpTen(ev)
+	} else if strings.HasPrefix(message, containerList) {
+		s.containersList(ev)
 	} else {
 		s.interactiveMessage(ev)
 	}
 
 	return nil
+}
+
+func (s *SlackListener) containersList(ev *slack.MessageEvent) {
+	var containers []Container
+	containersString := rancherListener.ListContainers()
+
+	data := gjson.Get(containersString, "data")
+	data.ForEach(func(key, value gjson.Result) bool {
+		var container Container
+		container.ID = value.Get("id").String()
+		container.Name = value.Get("name").String()
+		container.HostID = value.Get("hostId").String()
+
+		containers = append(containers, container)
+
+		return true
+	})
+
+	msg := "*Containers List:*\n"
+
+	for _, container := range containers {
+		host := gjson.Get(rancherListener.GetHostInfo(container.HostID), "hostname").String()
+		msg += fmt.Sprintf("ID: `%s` | Name: `%s` | Host: `%s`\n", container.ID, container.Name, host)
+	}
+
+	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
+
 }
 
 func (s *SlackListener) serviceCheck(ev *slack.MessageEvent) {
