@@ -305,6 +305,8 @@ func (s *SlackListener) containersList(ev *slack.MessageEvent) {
 		}
 
 		s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
+	} else {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText("Please, send keyword to query.", false))
 	}
 
 }
