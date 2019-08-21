@@ -91,7 +91,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.ConnectedEvent:
-			s.client.PostMessage(s.channelID, slack.MsgOptionText("Hey brow, I'm here! Cry your tears :sob:", false))
+			// s.client.PostMessage(s.channelID, slack.MsgOptionText("Hey brow, I'm here! Cry your tears :sob:", false))
 			log.Println("[INFO] BOT started successfully!")
 		case *slack.MessageEvent:
 			s.handleMessageEvent(ev)
