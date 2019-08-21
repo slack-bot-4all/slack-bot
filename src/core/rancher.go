@@ -79,7 +79,7 @@ func (ranchListener *RancherListener) StopService(ID string) {
 
 // ListContainers é uma função que retornará uma lista de todos os containers de um projeto/environment
 func (ranchListener *RancherListener) ListContainers() string {
-	url := fmt.Sprintf("%s/v2-beta/projects/%s/containers", ranchListener.baseURL, ranchListener.projectID)
+	url := fmt.Sprintf("%s/v2-beta/projects/%s/containers?limit=0", ranchListener.baseURL, ranchListener.projectID)
 	resp := ranchListener.HTTPSendRancherRequest(url, GetHTTP, "")
 
 	return resp

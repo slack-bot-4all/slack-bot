@@ -276,29 +276,36 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 }
 
 func (s *SlackListener) containersList(ev *slack.MessageEvent) {
-	var containers []Container
-	containersString := rancherListener.ListContainers()
+	args := strings.Split(ev.Msg.Text, " ")
 
-	data := gjson.Get(containersString, "data")
-	data.ForEach(func(key, value gjson.Result) bool {
-		var container Container
-		container.ID = value.Get("id").String()
-		container.Name = value.Get("name").String()
-		container.HostID = value.Get("hostId").String()
+	if len(args) == 3 {
+		keyword := args[2]
+		var containers []Container
+		containersString := rancherListener.ListContainers()
 
-		containers = append(containers, container)
+		data := gjson.Get(containersString, "data")
+		data.ForEach(func(key, value gjson.Result) bool {
+			if strings.Contains(value.Get("name").String(), keyword) {
+				var container Container
+				container.ID = value.Get("id").String()
+				container.Name = value.Get("name").String()
+				container.HostID = value.Get("hostId").String()
 
-		return true
-	})
+				containers = append(containers, container)
+			}
 
-	msg := "*Containers List:*\n"
+			return true
+		})
 
-	for _, container := range containers {
-		host := gjson.Get(rancherListener.GetHostInfo(container.HostID), "hostname").String()
-		msg += fmt.Sprintf("ID: `%s` | Name: `%s` | Host: `%s`\n", container.ID, container.Name, host)
+		msg := "*Containers List:*\n"
+
+		for _, container := range containers {
+			host := gjson.Get(rancherListener.GetHostInfo(container.HostID), "hostname").String()
+			msg += fmt.Sprintf("ID: `%s` | Name: `%s` | Host: `%s`\n", container.ID, container.Name, host)
+		}
+
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 	}
-
-	s.client.PostMessage(ev.Channel, slack.MsgOptionText(msg, false))
 
 }
 
