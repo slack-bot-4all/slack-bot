@@ -6,6 +6,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/slack-bot-4all/slack-bot/src/scripts"
 	"io/ioutil"
 	"os"
 	"log"
@@ -45,6 +46,7 @@ const (
 	listAllRunningTasks = "task-list"
 	listAllEnvironments = "env-list"
 	selectEnvironment   = "env-set"
+	envCleanupMachines  = "env-cleanup"
 	selectRancher       = "rancher-set"
 	listRancher         = "rancher-list"
 	commands            = "commands"
@@ -260,6 +262,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.listAllRanchers(ev)
 	} else if strings.HasPrefix(message, selectEnvironment) {
 		s.selectEnvironment(ev)
+	} else if strings.HasPrefix(message, envCleanupMachines) {
+		s.envCleanupMachinesFunc(ev)
 	} else if strings.HasPrefix(message, statusService) {
 		s.serviceCheck(ev)
 	} else if strings.HasPrefix(message, commands) {
@@ -273,6 +277,19 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	}
 
 	return nil
+}
+
+func (s *SlackListener) envCleanupMachinesFunc(ev *slack.MessageEvent) {
+	if rancherListener.projectID == "" {
+		s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Please select environment."), false))
+	} else {
+		err := scripts.CleanupMachines(rancherListener.baseURL, rancherListener.accessKey, rancherListener.secretKey, rancherListener.projectID)
+		if err != nil {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Error on cleanup machines\nError: %s", err.Error()), false))
+		} else {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Finish rotine, environment cleaned!"), false))
+		}
+	}
 }
 
 func (s *SlackListener) containersList(ev *slack.MessageEvent) {

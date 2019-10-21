@@ -167,6 +167,14 @@ func CreateCommands() {
 	})
 
 	Commands = append(Commands, Command{
+		Cmd:         envCleanupMachines,
+		Description: "Command to cleanup machines of one environment on Rancher",
+		Usage:       "@jeremias command",
+		Lint:        "This command cleans disconnected machines from environment",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
 		Cmd:         selectRancher,
 		Description: "Command sets the selected Rancher, to next requests",
 		Usage:       "@jeremias command `rancher-name`",
