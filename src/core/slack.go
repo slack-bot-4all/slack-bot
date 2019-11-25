@@ -93,7 +93,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.ConnectedEvent:
-			// s.client.PostMessage(s.channelID, slack.MsgOptionText("Hey brow, I'm here! Cry your tears :sob:", false))
+			//s.client.PostMessage(s.channelID, slack.MsgOptionText("Hey brow, I'm here! Cry your tears :sob:", false))
 			log.Println("[INFO] BOT started successfully!")
 		case *slack.MessageEvent:
 			s.handleMessageEvent(ev)
@@ -1179,36 +1179,36 @@ func (s *SlackListener) slackUpdateCanary(ev *slack.MessageEvent) {
 
 func (s *SlackListener) slackLogsContainer(ev *slack.MessageEvent) {
 
-	args := strings.Split(ev.Msg.Text, " ")
-
-	if len(args) == 3 {
-		container := args[2]
-
-		fileName := rancherListener.LogsContainer(container)
-
-		time.Sleep(2 * time.Second)
-
-		api := getAPIConnection()
-
-		_, err := api.client.UploadFile(slack.FileUploadParameters{
-			File:     fileName,
-			Filename: fileName,
-			Filetype: "text",
-			Channels: []string{
-				api.channelID,
-			},
-		})
-		CheckErr("Upload logs container error", err)
-	} else {
-		s.createAndSendAttachment(
-			ev,
-			"Which container you need to download logs? :yum:",
-			logsContainer,
-			getContainers(),
-			nil,
-		)
-
-	}
+	//args := strings.Split(ev.Msg.Text, " ")
+	//
+	//if len(args) == 3 {
+	//	container := args[2]
+	//
+	//	fileName := rancherListener.LogsContainer(container)
+	//
+	//	time.Sleep(2 * time.Second)
+	//
+	//	api := getAPIConnection()
+	//
+	//	_, err := api.client.UploadFile(slack.FileUploadParameters{
+	//		File:     fileName,
+	//		Filename: fileName,
+	//		Filetype: "text",
+	//		Channels: []string{
+	//			api.channelID,
+	//		},
+	//	})
+	//	CheckErr("Upload logs container error", err)
+	//} else {
+	//	s.createAndSendAttachment(
+	//		ev,
+	//		"Which container you need to download logs? :yum:",
+	//		logsContainer,
+	//		getContainers(),
+	//		nil,
+	//	)
+	//
+	//}
 
 }
 

@@ -7,10 +7,13 @@ import (
 
 // Bot contains information about a bot
 type Bot struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Deleted bool   `json:"deleted"`
-	Icons   Icons  `json:"icons"`
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Deleted bool     `json:"deleted"`
+	UserID  string   `json:"user_id"`
+	AppID   string   `json:"app_id"`
+	Updated JSONTime `json:"updated"`
+	Icons   Icons    `json:"icons"`
 }
 
 type botResponseFull struct {
@@ -41,7 +44,10 @@ func (api *Client) GetBotInfo(bot string) (*Bot, error) {
 func (api *Client) GetBotInfoContext(ctx context.Context, bot string) (*Bot, error) {
 	values := url.Values{
 		"token": {api.token},
-		"bot":   {bot},
+	}
+
+	if bot != "" {
+		values.Add("bot", bot)
 	}
 
 	response, err := api.botRequest(ctx, "bots.info", values)

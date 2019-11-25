@@ -23,8 +23,14 @@ type SearchParameters struct {
 }
 
 type CtxChannel struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID                 string `json:"id"`
+	Name               string `json:"name"`
+	IsExtShared        bool   `json:"is_ext_shared"`
+	IsMPIM             bool   `json:"is_mpim"`
+	ISOrgShared        bool   `json:"is_org_shared"`
+	IsPendingExtShared bool   `json:"is_pending_ext_shared"`
+	IsPrivate          bool   `json:"is_private"`
+	IsShared           bool   `json:"is_shared"`
 }
 
 type CtxMessage struct {
@@ -41,6 +47,7 @@ type SearchMessage struct {
 	User        string       `json:"user"`
 	Username    string       `json:"username"`
 	Timestamp   string       `json:"ts"`
+	Blocks      Blocks       `json:"blocks,omitempty"`
 	Text        string       `json:"text"`
 	Permalink   string       `json:"permalink"`
 	Attachments []Attachment `json:"attachments"`

@@ -72,6 +72,9 @@ var (
 	// StatusCakeChannelID ::
 	StatusCakeChannelID string
 
+	// GinRelease ::
+	GinRelease string
+
 	RanchListener *RancherListener
 )
 
@@ -93,6 +96,7 @@ func init() {
 	flag.StringVar(&SplunkBaseURL, "splunk_base_url", os.Getenv("SPLUNK_BASE_URL"), "Url of Splunk")
 	flag.StringVar(&SplunkUsername, "splunk_username", os.Getenv("SPLUNK_USERNAME"), "Username of Splunk")
 	flag.StringVar(&SplunkPassword, "splunk_password", os.Getenv("SPLUNK_PASSWORD"), "Password of Splunk")
+	flag.StringVar(&GinRelease, "gin_release", os.Getenv("GIN_RELEASE"), "Gin Release")
 }
 
 // Start : start all proccesses
@@ -128,11 +132,21 @@ func Start() {
 	CreateCommands()
 	log.Println("[INFO] Commands has been updated!")
 
-	client := slack.New(
-		SlackBotToken,
-		slack.OptionDebug(false),
-		slack.OptionLog(log.New(mw, "SLfR: ", log.Lshortfile|log.LstdFlags)),
-	)
+
+	var client *slack.Client
+	if GinRelease == "release" {
+		client = slack.New(
+			SlackBotToken,
+			slack.OptionDebug(false),
+			slack.OptionLog(log.New(mw, "SLfR: ", log.Lshortfile|log.LstdFlags)),
+		)
+	} else {
+		client = slack.New(
+			SlackBotToken,
+			slack.OptionDebug(true),
+			slack.OptionLog(log.New(mw, "SLfR: ", log.Lshortfile|log.LstdFlags)),
+		)
+	}
 
 	slackListener := &SlackListener{
 		client:    client,
