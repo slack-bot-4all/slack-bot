@@ -72,8 +72,8 @@ var (
 	// StatusCakeChannelID ::
 	StatusCakeChannelID string
 
-	// GinRelease ::
-	GinRelease string
+	// GinMode ::
+	GinMode string
 
 	RanchListener *RancherListener
 )
@@ -96,7 +96,7 @@ func init() {
 	flag.StringVar(&SplunkBaseURL, "splunk_base_url", os.Getenv("SPLUNK_BASE_URL"), "Url of Splunk")
 	flag.StringVar(&SplunkUsername, "splunk_username", os.Getenv("SPLUNK_USERNAME"), "Username of Splunk")
 	flag.StringVar(&SplunkPassword, "splunk_password", os.Getenv("SPLUNK_PASSWORD"), "Password of Splunk")
-	flag.StringVar(&GinRelease, "gin_release", os.Getenv("GIN_RELEASE"), "Gin Release")
+	flag.StringVar(&GinMode, "gin_mode", os.Getenv("GIN_MODE"), "Gin Mode")
 }
 
 // Start : start all proccesses
@@ -134,7 +134,7 @@ func Start() {
 
 
 	var client *slack.Client
-	if GinRelease == "release" {
+	if GinMode == "release" {
 		client = slack.New(
 			SlackBotToken,
 			slack.OptionDebug(false),
