@@ -78,6 +78,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 
 	go func() {
 		for {
+			log.Println("Executando verificação nas tasks...")
 			s.executeTasks()
 			time.Sleep(time.Second * 90)
 		}
