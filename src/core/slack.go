@@ -524,9 +524,11 @@ func (s *SlackListener) executeTasks() error {
 			})
 
 			if serviceHealthState != "healthy" && serviceHealthState != "inactive" && serviceHealthState != "initializing" {
+				log.Println("BreakPoint Service 01")
 				var findCounterService model.ContainerCount
 				if err := repository.GetCounterByContainerID(&findCounterService, serviceID); err != nil {
 					if err.Error() == "record not found" {
+						log.Println("BreakPoint Service 02")
 						if err := repository.CreateCounterToService(&model.ContainerCount{
 							ContainerID: serviceID,
 							Count:       0,
@@ -534,6 +536,7 @@ func (s *SlackListener) executeTasks() error {
 							ServiceName: serviceName,
 							StackName:   stackName,
 						}); err != nil {
+							log.Println("Erro ao criar Counter do serviço")
 							return err
 						}
 
