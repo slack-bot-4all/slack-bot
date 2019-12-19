@@ -80,7 +80,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 		for {
 			log.Println("Executando verificação nas tasks...")
 			s.executeTasks()
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 90)
 		}
 	}()
 
@@ -922,6 +922,8 @@ func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 			RancherSecretKey:   rancherListener.secretKey,
 			RancherProjectID:   rancherListener.projectID,
 		}
+
+		task.IsRestartEnabled = false
 
 		err := service.AddTask(task)
 		if err != nil {
