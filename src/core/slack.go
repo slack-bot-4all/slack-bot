@@ -42,6 +42,7 @@ const (
 	stopService         = "service-stop"
 	statusService       = "service-status"
 	checkServiceHealth  = "task-add"
+	taskAddByKeyword    = "task-auto"
 	removeServiceCheck  = "task-stop"
 	listAllRunningTasks = "task-list"
 	listAllEnvironments = "env-list"
@@ -251,6 +252,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		s.slackStopService(ev)
 	} else if strings.HasPrefix(message, checkServiceHealth) {
 		s.slackCheckServiceHealth(ev)
+	} else if strings.HasPrefix(message, taskAddByKeyword) {
+		s.slackCheckServiceByKeyword(ev)
 	} else if strings.HasPrefix(message, removeServiceCheck) {
 		s.stopServiceCheck(ev)
 	} else if strings.HasPrefix(message, listAllRunningTasks) {
@@ -907,6 +910,117 @@ func (s *SlackListener) stopServiceCheck(ev *slack.MessageEvent) {
 				s.client.PostMessage(ev.Channel, slack.MsgOptionText(fmt.Sprintf("Task *%s*/`%s` stopped successfully!", taskIDToStop, taskToStop.Service), false))
 			}
 
+		}
+	}
+}
+
+func (s *SlackListener) slackCheckServiceByKeyword(ev *slack.MessageEvent) {
+	args := strings.Split(ev.Msg.Text, " ")
+
+	if len(args) >= 4 {
+		keywordsInCommand := args[2]
+		channelInCommand := args[3]
+		deleteInCommand := args[4]
+
+		var ranchers []model.Rancher
+		err := repository.ListRancher(&ranchers)
+		if err != nil {
+			s.client.PostMessage(ev.Channel, slack.MsgOptionText("Erro ao carregar Ranchers da base", false))
+			return
+		}
+
+		if strings.Contains(keywordsInCommand, ",") {
+			keywords := strings.Split(keywordsInCommand, ",")
+
+			for _, keyword := range keywords {
+				// if serviceId != inativo
+				//pier
+				for _, rancher := range ranchers {
+					rancherListener = &RancherListener{
+						accessKey: rancher.AccessKey,
+						secretKey: rancher.SecretKey,
+						baseURL:   rancher.URL,
+					}
+					resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+					data := gjson.Get(resp, "data")
+					data.ForEach(func(key, value gjson.Result) bool {
+						envID := value.Get("id").String()
+
+						rancherListener.projectID = envID
+						respAllStacks := rancherListener.GetStacks()
+
+						dataStack := gjson.Get(respAllStacks, "data")
+						dataStack.ForEach(func(key, value gjson.Result) bool {
+							stackID := value.Get("id").String()
+							stackName := value.Get("name").String()
+
+							if strings.Contains(stackName, keyword) {
+								respAllServicesFromStack := rancherListener.GetServicesFromStack(stackID)
+
+								dataService := gjson.Get(respAllServicesFromStack, "data")
+								dataService.ForEach(func(key, value gjson.Result) bool {
+									serviceName := value.Get("name").String()
+
+									if strings.Contains(serviceName, keyword) {
+										ev.Msg.Text = fmt.Sprintf("@jeremias task-add %s/%s %s %s", stackName, serviceName, channelInCommand, deleteInCommand)
+										s.slackCheckServiceHealth(ev)
+									}
+
+									return true
+								})
+							}
+
+							return true
+						})
+
+						return true
+					})
+				}
+			}
+		} else {
+			for _, rancher := range ranchers {
+				rancherListener = &RancherListener{
+					accessKey: rancher.AccessKey,
+					secretKey: rancher.SecretKey,
+					baseURL:   rancher.URL,
+				}
+				resp := rancherListener.GetAllEnvironmentsFromRancher()
+
+				data := gjson.Get(resp, "data")
+				data.ForEach(func(key, value gjson.Result) bool {
+					envID := value.Get("id").String()
+
+					rancherListener.projectID = envID
+					respAllStacks := rancherListener.GetStacks()
+
+					dataStack := gjson.Get(respAllStacks, "data")
+					dataStack.ForEach(func(key, value gjson.Result) bool {
+						stackID := value.Get("id").String()
+						stackName := value.Get("name").String()
+
+						if strings.Contains(stackName, keywordsInCommand) {
+							respAllServicesFromStack := rancherListener.GetServicesFromStack(stackID)
+
+							dataService := gjson.Get(respAllServicesFromStack, "data")
+							dataService.ForEach(func(key, value gjson.Result) bool {
+								serviceName := value.Get("name").String()
+
+								if strings.Contains(serviceName, keywordsInCommand) {
+									ev.Msg.Text = fmt.Sprintf("@jeremias task-add %s/%s %s %s", stackName, serviceName, channelInCommand, deleteInCommand)
+									s.slackCheckServiceHealth(ev)
+								}
+
+								return true
+							})
+						}
+
+						return true
+					})
+
+					return true
+				})
+			}
 		}
 	}
 }

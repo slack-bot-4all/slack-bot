@@ -127,6 +127,14 @@ func CreateCommands() {
 	})
 
 	Commands = append(Commands, Command{
+		Cmd:         taskAddByKeyword,
+		Description: "Command used to add tasks using a keyword",
+		Usage:       "@jeremias command `keyword1,keyword2` `channelToSendAlert` `deleteContainer?`",
+		Lint:        "",
+		IsActive:    true,
+	})
+
+	Commands = append(Commands, Command{
 		Cmd:         statusService,
 		Description: "Command used to check status of service",
 		Usage:       "@jeremias command `stackName/serviceName` `channel-to-send-alert`",
