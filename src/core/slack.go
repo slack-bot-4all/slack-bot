@@ -562,6 +562,7 @@ func (s *SlackListener) executeTasks() error {
 
 				for _, container := range containers {
 					if container.State == "running" && container.HealthState != "unhealthy" || (container.State == "stopped" && container.HealthState != "unhealthy") {
+						log.Println("Entrou 01")
 						upContainers = append(upContainers, container)
 						for _, counter := range counters {
 							if counter.ContainerID == container.ID {
@@ -573,7 +574,9 @@ func (s *SlackListener) executeTasks() error {
 								}
 							}
 						}
+						log.Println("Saiu 01")
 					} else {
+						log.Println("Entrou 02")
 						var counterByContainerID model.ContainerCount
 						err := repository.GetCounterByContainerID(&counterByContainerID, container.ID)
 						if err != nil {
@@ -588,10 +591,12 @@ func (s *SlackListener) executeTasks() error {
 								return err
 							}
 
+							log.Println("Saiu 02")
 							return err
 						}
 
 						if counterByContainerID.Count >= 2 {
+							log.Println("Entrou 03")
 							if serviceState != "inactive" {
 								resp := rancherListener.GetAllEnvironmentsFromRancher()
 
@@ -611,6 +616,7 @@ func (s *SlackListener) executeTasks() error {
 							return nil
 						}
 
+						log.Println("Entrou 04")
 						err = repository.IncrementCounterByContainerID(container.ID)
 						if err != nil {
 							return err
