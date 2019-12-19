@@ -80,7 +80,7 @@ func (s *SlackListener) StartBot(rList *RancherListener) {
 		for {
 			log.Println("Executando verificação nas tasks...")
 			s.executeTasks()
-			time.Sleep(time.Second * 90)
+			time.Sleep(time.Second * 2)
 		}
 	}()
 
@@ -604,7 +604,7 @@ func (s *SlackListener) executeTasks() error {
 									return true
 								})
 
-								// s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
+								s.client.PostMessage(task.ChannelToSendAlert, slack.MsgOptionText(fmt.Sprintf("Please, check the service `%s/%s` in Environment `%s` actually is `%s`", stackName, serviceName, envName, serviceHealthState), true))
 								return nil
 							}
 
@@ -839,7 +839,7 @@ func (s *SlackListener) listAllRunningTasks(ev *slack.MessageEvent) {
 			if task.IsOnlyCheck == true {
 				msg += fmt.Sprintf("*%d* / %s - Environment `%s` - Is only check!\n", task.ID, task.Service, envName)
 			} else {
-				msg += fmt.Sprintf("*%d* / %s - Environment `%s`\n", task.ID, task.Service, envName)
+				msg += fmt.Sprintf("*%d* / %s - Environment `%s` / Restart: `%s`\n", task.ID, task.Service, envName, task.IsRestartEnabled)
 			}
 		}
 	}
@@ -922,8 +922,6 @@ func (s *SlackListener) slackCheckServiceHealth(ev *slack.MessageEvent) {
 			RancherSecretKey:   rancherListener.secretKey,
 			RancherProjectID:   rancherListener.projectID,
 		}
-
-		task.IsRestartEnabled = false
 
 		err := service.AddTask(task)
 		if err != nil {
